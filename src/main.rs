@@ -1,9 +1,12 @@
 mod hittable;
+mod objects;
 mod ray;
+
+use std::rc::Rc;
 
 use nalgebra::{Point3, Vector3};
 
-use crate::ray::Ray;
+use crate::{hittable::HittableList, objects::Sphere, ray::Ray};
 
 const ASPECT_RATIO: f64 = 16.0 / 9.0;
 
@@ -15,6 +18,11 @@ type Color = Vector3<f64>;
 type Point = Point3<f64>;
 
 fn main() {
+    // World
+    let mut world = HittableList::new();
+    world.add(Rc::new(Sphere::new(Point::new(0.0, 0.0, -1.0), 0.5)));
+    world.add(Rc::new(Sphere::new(Point::new(0.0, -100.5, -1.0), 100.0)));
+
     // Camera
     let viewport_height = 2.0;
     let viewport_width = ASPECT_RATIO * viewport_height;
@@ -26,6 +34,7 @@ fn main() {
     let lower_left_corner =
         origin - horizontal / 2.0 - vertical / 2.0 - Vector::new(0.0, 0.0, focal_length);
 
+    // Render
     println!("P3");
     println!("{IMAGE_WIDTH} {IMAGE_HEIGHT}");
     println!("255");
@@ -39,7 +48,7 @@ fn main() {
                 origin,
                 lower_left_corner + u * horizontal + v * vertical - origin,
             );
-            let pixel_color = ray.color();
+            let pixel_color = ray.color(&world);
 
             write_color(pixel_color);
         }
