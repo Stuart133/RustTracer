@@ -1,3 +1,4 @@
+mod hittable;
 mod ray;
 
 use nalgebra::{Point3, Vector3};
