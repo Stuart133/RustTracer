@@ -7,8 +7,9 @@ use std::rc::Rc;
 
 use nalgebra::{Point3, Vector3};
 
-use crate::{camera::Camera, hittable::HittableList, objects::Sphere, ray::Ray};
+use crate::{camera::Camera, hittable::HittableList, objects::Sphere};
 
+const SAMPLES_PER_PIXEL: i64 = 100;
 const ASPECT_RATIO: f64 = 16.0 / 9.0;
 
 const IMAGE_WIDTH: i64 = 400;
@@ -26,15 +27,6 @@ fn main() {
 
     // Camera
     let camera = Camera::new();
-    let viewport_height = 2.0;
-    let viewport_width = ASPECT_RATIO * viewport_height;
-    let focal_length = 1.0;
-
-    let origin = Point::new(0.0, 0.0, 0.0);
-    let horizontal = Vector::new(viewport_width, 0.0, 0.0);
-    let vertical = Vector::new(0.0, viewport_height, 0.0);
-    let lower_left_corner =
-        origin - horizontal / 2.0 - vertical / 2.0 - Vector::new(0.0, 0.0, focal_length);
 
     // Render
     println!("P3");
@@ -44,15 +36,15 @@ fn main() {
     for j in (0..IMAGE_HEIGHT).rev() {
         eprintln!("Scanlines remaining: {j}");
         for i in 0..IMAGE_WIDTH {
-            let u = i as f64 / (IMAGE_WIDTH - 1) as f64;
-            let v = j as f64 / (IMAGE_HEIGHT - 1) as f64;
-            let ray = Ray::new(
-                origin,
-                lower_left_corner + u * horizontal + v * vertical - origin,
-            );
-            let pixel_color = ray.color(&world);
+            let mut pixel_color = Color::new(0.0, 0.0, 0.0);
+            for _ in 0..SAMPLES_PER_PIXEL {
+                let u = (i as f64 + rand::random::<f64>()) / (IMAGE_WIDTH - 1) as f64;
+                let v = (j as f64 + rand::random::<f64>()) / (IMAGE_HEIGHT - 1) as f64;
+                let ray = camera.get_ray(u, v);
+                pixel_color += ray.color(&world);
+            }
 
-            write_color(pixel_color, 1);
+            write_color(pixel_color, SAMPLES_PER_PIXEL);
         }
     }
 

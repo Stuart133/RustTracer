@@ -13,11 +13,6 @@ impl Sphere {
     pub fn new(center: Point, radius: f64) -> Self {
         Self { center, radius }
     }
-
-    #[inline]
-    pub fn center(&self) -> &Point {
-        &self.center
-    }
 }
 
 impl Hittable for Sphere {

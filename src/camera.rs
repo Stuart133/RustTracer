@@ -1,6 +1,4 @@
-use crate::{ray::Ray, Point, Vector};
-
-const ASPECT_RATIO: f64 = 16.0 / 9.0;
+use crate::{ray::Ray, Point, Vector, ASPECT_RATIO};
 
 pub struct Camera {
     origin: Point,
