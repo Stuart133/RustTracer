@@ -1,3 +1,4 @@
+mod camera;
 mod hittable;
 mod objects;
 mod ray;
@@ -6,7 +7,7 @@ use std::rc::Rc;
 
 use nalgebra::{Point3, Vector3};
 
-use crate::{hittable::HittableList, objects::Sphere, ray::Ray};
+use crate::{camera::Camera, hittable::HittableList, objects::Sphere, ray::Ray};
 
 const ASPECT_RATIO: f64 = 16.0 / 9.0;
 
@@ -24,6 +25,7 @@ fn main() {
     world.add(Rc::new(Sphere::new(Point::new(0.0, -100.5, -1.0), 100.0)));
 
     // Camera
+    let camera = Camera::new();
     let viewport_height = 2.0;
     let viewport_width = ASPECT_RATIO * viewport_height;
     let focal_length = 1.0;
@@ -50,18 +52,23 @@ fn main() {
             );
             let pixel_color = ray.color(&world);
 
-            write_color(pixel_color);
+            write_color(pixel_color, 1);
         }
     }
 
     eprintln!("Done");
 }
 
-fn write_color(pixel_color: Color) {
+fn write_color(pixel_color: Color, samples_per_pixel: i64) {
+    let scale = 1.0 / samples_per_pixel as f64;
+    let r = pixel_color.x * scale;
+    let g = pixel_color.y * scale;
+    let b = pixel_color.z * scale;
+
     println!(
         "{} {} {}",
-        (255.999 * pixel_color.x) as u64,
-        (255.999 * pixel_color.y) as u64,
-        (255.999 * pixel_color.z) as u64
+        (256.0 * r.clamp(0.0, 0.999)) as u64,
+        (256.0 * g.clamp(0.0, 0.999)) as u64,
+        (256.0 * b.clamp(0.0, 0.999)) as u64
     );
 }
