@@ -4,6 +4,32 @@ pub struct HitRecord {
     pub p: Point,
     pub normal: Vector,
     pub t: f64,
+    pub face: Face,
+}
+
+impl HitRecord {
+    pub fn new(p: Point, outward_normal: Vector, t: f64, ray: &Ray) -> Self {
+        if ray.direction().dot(&outward_normal) > 0.0 {
+            HitRecord {
+                p,
+                normal: outward_normal,
+                t,
+                face: Face::Front,
+            }
+        } else {
+            HitRecord {
+                p,
+                normal: -outward_normal,
+                t,
+                face: Face::Back,
+            }
+        }
+    }
+}
+
+pub enum Face {
+    Front,
+    Back,
 }
 
 pub trait Hittable {
@@ -49,10 +75,11 @@ impl Hittable for Sphere {
             }
         }
 
-        Some(HitRecord {
-            t: root,
-            p: ray.at(root),
-            normal: (ray.at(root) - self.center) / self.radius,
-        })
+        Some(HitRecord::new(
+            ray.at(root),
+            (ray.at(root) - self.center) / self.radius,
+            root,
+            ray,
+        ))
     }
 }
