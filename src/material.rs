@@ -1,9 +1,9 @@
 use nalgebra::Unit;
 
 use crate::{
-    hittable::HitRecord,
-    math::{near_zero, random_in_unit_sphere, random_unit_vector, reflect, Color},
-    ray::Ray,
+    hittable::{Face, HitRecord},
+    math::{near_zero, random_in_unit_sphere, random_unit_vector, Color, Vector},
+    ray::{self, Ray},
 };
 
 pub trait Material {
@@ -63,4 +63,44 @@ impl Material for Metal {
             attentuation: self.albedo,
         })
     }
+}
+
+pub struct Dielectric {
+    refraction_index: f64,
+}
+
+impl Dielectric {
+    pub fn new(refraction_index: f64) -> Self {
+        Self { refraction_index }
+    }
+}
+
+impl Material for Dielectric {
+    fn scatter(&self, ray_in: &Ray, hit: &HitRecord) -> Option<ScatterRecord> {
+        let refraction_ratio = match hit.face {
+            Face::Front => 1.0 / self.refraction_index,
+            Face::Back => self.refraction_index,
+        };
+
+        let unit_direction = Unit::new_normalize(*ray_in.direction());
+        let refracted = refract(&unit_direction, &hit.normal, refraction_ratio);
+
+        Some(ScatterRecord {
+            ray: Ray::new(hit.p, refracted),
+            attentuation: Color::new(1.0, 1.0, 1.0),
+        })
+    }
+}
+
+#[inline]
+pub fn reflect(vector: &Vector, normal: &Vector) -> Vector {
+    vector - 2.0 * vector.dot(normal) * normal
+}
+
+pub fn refract(uv: &Vector, normal: &Vector, etai_over_etat: f64) -> Vector {
+    let cos_theta = (-uv).dot(normal).min(1.0);
+    let r_out_perpendicular = etai_over_etat * (uv + cos_theta * normal);
+    let r_out_parallel = -(1.0 - r_out_perpendicular.magnitude_squared()).abs().sqrt() * normal;
+
+    r_out_parallel + r_out_perpendicular
 }

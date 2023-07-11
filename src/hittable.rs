@@ -63,7 +63,6 @@ impl HitRecord {
         material: Rc<dyn Material>,
     ) -> Self {
         if ray.direction().dot(&outward_normal) > 0.0 {
-            //eprintln!("Inside an object");
             HitRecord {
                 p,
                 t,
