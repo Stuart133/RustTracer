@@ -44,26 +44,27 @@ impl Hittable for HittableList {
 
 pub struct HitRecord {
     pub p: Point,
-    pub normal: Vector,
     pub t: f64,
+    pub normal: Vector,
     pub face: Face,
 }
 
 impl HitRecord {
-    pub fn new(p: Point, outward_normal: Vector, t: f64, ray: &Ray) -> Self {
+    pub fn new(p: Point, t: f64, outward_normal: Vector, ray: &Ray) -> Self {
         if ray.direction().dot(&outward_normal) > 0.0 {
+            // eprintln!("Inside the place");
             HitRecord {
                 p,
-                normal: -outward_normal,
                 t,
-                face: Face::Front,
+                normal: outward_normal,
+                face: Face::Back,
             }
         } else {
             HitRecord {
                 p,
-                normal: outward_normal,
                 t,
-                face: Face::Back,
+                normal: outward_normal,
+                face: Face::Front,
             }
         }
     }

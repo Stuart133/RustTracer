@@ -38,8 +38,9 @@ impl Ray {
 
         match world.hit(self, 0.0, f64::MAX) {
             Some(hit) => {
-                let target = hit.p + hit.normal + random_in_unit_sphere();
-                0.5 * Ray::new(hit.p, target - hit.p).color(world, depth - 1)
+                // let target = hit.p + hit.normal + random_in_unit_sphere();
+                // 0.5 * (hit.normal + Color::new(1.0, 1.0, 1.0))
+                0.5 * Ray::new(hit.p, hit.normal).color(world, depth - 1)
             }
             None => {
                 let t = 0.5 * (Unit::new_normalize(self.direction).y + 1.0);

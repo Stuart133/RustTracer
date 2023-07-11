@@ -40,8 +40,8 @@ impl Hittable for Sphere {
 
         Some(HitRecord::new(
             ray.at(root),
-            (ray.at(root) - self.center) / self.radius,
             root,
+            (ray.at(root) - self.center) / self.radius,
             ray,
         ))
     }
