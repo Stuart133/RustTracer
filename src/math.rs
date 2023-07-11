@@ -1,4 +1,4 @@
-use nalgebra::{Point3, Vector3};
+use nalgebra::{Point3, Unit, Vector3};
 
 pub type Vector = Vector3<f64>;
 pub type Color = Vector3<f64>;
@@ -30,4 +30,9 @@ pub fn random_in_unit_sphere() -> Vector {
             return p;
         }
     }
+}
+
+#[inline]
+pub fn random_unit_vector() -> Vector {
+    *Unit::new_normalize(random_in_unit_sphere())
 }

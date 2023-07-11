@@ -53,8 +53,6 @@ pub struct HitRecord {
 impl HitRecord {
     pub fn new(p: Point, t: f64, outward_normal: Vector, ray: &Ray) -> Self {
         if ray.direction().dot(&outward_normal) > 0.0 {
-            eprintln!("Inside the place at {p}");
-            panic!();
             HitRecord {
                 p,
                 t,
