@@ -1,4 +1,4 @@
-use crate::{ray::Ray, Point, Vector, ASPECT_RATIO};
+use crate::{math::Vector, ray::Ray, Point, ASPECT_RATIO};
 
 pub struct Camera {
     origin: Point,

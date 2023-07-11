@@ -1,23 +1,19 @@
 mod camera;
 mod hittable;
+mod math;
 mod objects;
 mod ray;
 
 use std::rc::Rc;
 
-use nalgebra::{Point3, Vector3};
-
-use crate::{camera::Camera, hittable::HittableList, objects::Sphere};
+use crate::{camera::Camera, hittable::HittableList, math::Color, math::Point, objects::Sphere};
 
 const SAMPLES_PER_PIXEL: i64 = 100;
+const MAX_DEPTH: i64 = 50;
 const ASPECT_RATIO: f64 = 16.0 / 9.0;
 
 const IMAGE_WIDTH: i64 = 400;
 const IMAGE_HEIGHT: i64 = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as i64;
-
-type Vector = Vector3<f64>;
-type Color = Vector3<f64>;
-type Point = Point3<f64>;
 
 fn main() {
     // World
@@ -41,7 +37,7 @@ fn main() {
                 let u = (i as f64 + rand::random::<f64>()) / (IMAGE_WIDTH - 1) as f64;
                 let v = (j as f64 + rand::random::<f64>()) / (IMAGE_HEIGHT - 1) as f64;
                 let ray = camera.get_ray(u, v);
-                pixel_color += ray.color(&world);
+                pixel_color += ray.color(&world, MAX_DEPTH);
             }
 
             write_color(pixel_color, SAMPLES_PER_PIXEL);

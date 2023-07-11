@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-use crate::{ray::Ray, Point, Vector};
+use crate::{math::Vector, ray::Ray, Point};
 
 pub struct HittableList {
     objects: Vec<Rc<dyn Hittable>>,
