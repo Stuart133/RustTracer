@@ -40,16 +40,19 @@ impl Ray {
 
         match world.hit(self, MIN_INTERSECTION_DISTANCE, f64::MAX) {
             Some(hit) => {
-                // A diffuse scatter that produces a lambertian distribution (Proportional to cos(phi))
-                let target = hit.p + hit.normal + random_unit_vector();
+                match hit.material.scatter(self, &hit) {
+                    Some(scatter) => scatter
+                        .attentuation
+                        .component_mul(&scatter.ray.color(world, depth - 1)),
+                    None => Color::new(0.0, 0.0, 0.0),
+                }
 
+                // TODO: Move these to their own diffuse materials
                 // A diffuse scatter that produces a tigher scatter (Proportional to cos(phi)^3)
                 //let target = hit.p + hit.normal + random_in_unit_sphere();
 
                 // An different diffuse scattering method that is not distributed in proportion to the angle with the normal
                 // let target = hit.p + random_in_hemisphere(hit.normal);
-
-                0.5 * Ray::new(hit.p, target - hit.p).color(world, depth - 1)
             }
             None => {
                 let t = 0.5 * (Unit::new_normalize(self.direction).y + 1.0);

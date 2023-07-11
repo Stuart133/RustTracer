@@ -46,3 +46,15 @@ pub fn random_in_hemisphere(normal: &Vector) -> Vector {
         -in_unit_sphere
     }
 }
+
+#[inline]
+pub fn near_zero(vector: &Vector) -> bool {
+    let s = 1e-8;
+
+    f64::abs(vector.x) < s && f64::abs(vector.y) < s && f64::abs(vector.z) < s
+}
+
+#[inline]
+pub fn reflect(vector: &Vector, normal: &Vector) -> Vector {
+    vector - 2.0 * vector.dot(normal) * normal
+}

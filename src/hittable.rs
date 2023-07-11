@@ -2,6 +2,10 @@ use std::rc::Rc;
 
 use crate::{material::Material, math::Vector, ray::Ray, Point};
 
+pub trait Hittable {
+    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord>;
+}
+
 pub struct HittableList {
     objects: Vec<Rc<dyn Hittable>>,
 }
@@ -46,18 +50,25 @@ pub struct HitRecord {
     pub p: Point,
     pub t: f64,
     pub normal: Vector,
-    pub material: Option<Rc<dyn Material>>,
+    pub material: Rc<dyn Material>,
     pub face: Face,
 }
 
 impl HitRecord {
-    pub fn new(p: Point, t: f64, outward_normal: Vector, ray: &Ray) -> Self {
+    pub fn new(
+        p: Point,
+        t: f64,
+        outward_normal: Vector,
+        ray: &Ray,
+        material: Rc<dyn Material>,
+    ) -> Self {
         if ray.direction().dot(&outward_normal) > 0.0 {
+            //eprintln!("Inside an object");
             HitRecord {
                 p,
                 t,
                 normal: outward_normal,
-                material: None,
+                material,
                 face: Face::Back,
             }
         } else {
@@ -65,7 +76,7 @@ impl HitRecord {
                 p,
                 t,
                 normal: outward_normal,
-                material: None,
+                material,
                 face: Face::Front,
             }
         }
@@ -76,8 +87,4 @@ impl HitRecord {
 pub enum Face {
     Front,
     Back,
-}
-
-pub trait Hittable {
-    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord>;
 }

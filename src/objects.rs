@@ -1,5 +1,8 @@
+use std::rc::Rc;
+
 use crate::{
     hittable::{HitRecord, Hittable},
+    material::Material,
     ray::Ray,
     Point,
 };
@@ -7,11 +10,16 @@ use crate::{
 pub struct Sphere {
     center: Point,
     radius: f64,
+    material: Rc<dyn Material>,
 }
 
 impl Sphere {
-    pub fn new(center: Point, radius: f64) -> Self {
-        Self { center, radius }
+    pub fn new(center: Point, radius: f64, material: Rc<dyn Material>) -> Self {
+        Self {
+            center,
+            radius,
+            material,
+        }
     }
 }
 
@@ -43,15 +51,19 @@ impl Hittable for Sphere {
             root,
             (ray.at(root) - self.center) / self.radius,
             ray,
+            self.material.clone(),
         ))
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use std::rc::Rc;
+
     use crate::{
         hittable::{Face, Hittable},
-        math::{Point, Vector},
+        material::Lambertian,
+        math::{Color, Point, Vector},
         ray::Ray,
     };
 
@@ -59,7 +71,11 @@ mod tests {
 
     #[test]
     pub fn outward_ray_hit() {
-        let sphere = Sphere::new(Point::new(0.0, 0.0, -1.0), 0.5);
+        let sphere = Sphere::new(
+            Point::new(0.0, 0.0, -1.0),
+            0.5,
+            Rc::new(Lambertian::new(Color::new(1.0, 1.0, 1.0))),
+        );
 
         // This looks a bit random, but was a ray causing trouble on reflection due to 0 point intersection
         let ray = Ray::new(

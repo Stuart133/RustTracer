@@ -7,10 +7,17 @@ mod ray;
 
 use std::rc::Rc;
 
-use crate::{camera::Camera, hittable::HittableList, math::Color, math::Point, objects::Sphere};
+use crate::{
+    camera::Camera,
+    hittable::HittableList,
+    material::{Lambertian, Metal},
+    math::Color,
+    math::Point,
+    objects::Sphere,
+};
 
 // Quick hack to avoid floating point uncertainty causing self intersections
-const MIN_INTERSECTION_DISTANCE: f64 = 0.000000001;
+const MIN_INTERSECTION_DISTANCE: f64 = 0.000001;
 
 const SAMPLES_PER_PIXEL: i64 = 100;
 const MAX_DEPTH: i64 = 50;
@@ -22,8 +29,32 @@ const IMAGE_HEIGHT: i64 = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as i64;
 fn main() {
     // World
     let mut world = HittableList::new();
-    world.add(Rc::new(Sphere::new(Point::new(0.0, 0.0, -1.0), 0.5)));
-    world.add(Rc::new(Sphere::new(Point::new(0.0, -100.5, -1.0), 100.0)));
+
+    let material_ground = Rc::new(Lambertian::new(Color::new(0.8, 0.8, 0.0)));
+    let material_center = Rc::new(Lambertian::new(Color::new(0.7, 0.3, 0.3)));
+    let material_left = Rc::new(Metal::new(Color::new(0.8, 0.8, 0.8), 0.3));
+    let material_right = Rc::new(Metal::new(Color::new(0.8, 0.6, 0.2), 1.0));
+
+    world.add(Rc::new(Sphere::new(
+        Point::new(0.0, -100.5, -1.0),
+        100.0,
+        material_ground,
+    )));
+    world.add(Rc::new(Sphere::new(
+        Point::new(0.0, 0.0, -1.0),
+        0.5,
+        material_center,
+    )));
+    world.add(Rc::new(Sphere::new(
+        Point::new(-1.0, 0.0, -1.0),
+        0.5,
+        material_left,
+    )));
+    world.add(Rc::new(Sphere::new(
+        Point::new(1.0, 0.0, -1.0),
+        0.5,
+        material_right,
+    )));
 
     // Camera
     let camera = Camera::new();
