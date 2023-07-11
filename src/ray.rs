@@ -2,7 +2,7 @@ use nalgebra::Unit;
 
 use crate::{
     hittable::{Hittable, HittableList},
-    math::{random_in_unit_sphere, random_unit_vector, Color, Point, Vector},
+    math::{random_in_hemisphere, random_in_unit_sphere, random_unit_vector, Color, Point, Vector},
     MIN_INTERSECTION_DISTANCE,
 };
 
@@ -40,8 +40,15 @@ impl Ray {
 
         match world.hit(self, MIN_INTERSECTION_DISTANCE, f64::MAX) {
             Some(hit) => {
+                // A diffuse scatter that produces a lambertian distribution (Proportional to cos(phi))
                 let target = hit.p + hit.normal + random_unit_vector();
-                // 0.5 * (hit.normal + Color::new(1.0, 1.0, 1.0))
+
+                // A diffuse scatter that produces a tigher scatter (Proportional to cos(phi)^3)
+                //let target = hit.p + hit.normal + random_in_unit_sphere();
+
+                // An different diffuse scattering method that is not distributed in proportion to the angle with the normal
+                // let target = hit.p + random_in_hemisphere(hit.normal);
+
                 0.5 * Ray::new(hit.p, target - hit.p).color(world, depth - 1)
             }
             None => {

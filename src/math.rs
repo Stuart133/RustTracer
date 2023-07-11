@@ -36,3 +36,13 @@ pub fn random_in_unit_sphere() -> Vector {
 pub fn random_unit_vector() -> Vector {
     *Unit::new_normalize(random_in_unit_sphere())
 }
+
+#[inline]
+pub fn random_in_hemisphere(normal: &Vector) -> Vector {
+    let in_unit_sphere = random_in_unit_sphere();
+    if in_unit_sphere.dot(normal) > 0.0 {
+        in_unit_sphere
+    } else {
+        -in_unit_sphere
+    }
+}
