@@ -1,5 +1,6 @@
 mod camera;
 mod hittable;
+mod material;
 mod math;
 mod objects;
 mod ray;
@@ -9,7 +10,7 @@ use std::rc::Rc;
 use crate::{camera::Camera, hittable::HittableList, math::Color, math::Point, objects::Sphere};
 
 // Quick hack to avoid floating point uncertainty causing self intersections
-const MIN_INTERSECTION_DISTANCE: f64 = 0.0000000001;
+const MIN_INTERSECTION_DISTANCE: f64 = 0.000000001;
 
 const SAMPLES_PER_PIXEL: i64 = 100;
 const MAX_DEPTH: i64 = 50;

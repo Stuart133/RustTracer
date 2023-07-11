@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-use crate::{math::Vector, ray::Ray, Point};
+use crate::{material::Material, math::Vector, ray::Ray, Point};
 
 pub struct HittableList {
     objects: Vec<Rc<dyn Hittable>>,
@@ -42,11 +42,11 @@ impl Hittable for HittableList {
     }
 }
 
-#[derive(Debug, PartialEq)]
 pub struct HitRecord {
     pub p: Point,
     pub t: f64,
     pub normal: Vector,
+    pub material: Option<Rc<dyn Material>>,
     pub face: Face,
 }
 
@@ -57,6 +57,7 @@ impl HitRecord {
                 p,
                 t,
                 normal: outward_normal,
+                material: None,
                 face: Face::Back,
             }
         } else {
@@ -64,6 +65,7 @@ impl HitRecord {
                 p,
                 t,
                 normal: outward_normal,
+                material: None,
                 face: Face::Front,
             }
         }

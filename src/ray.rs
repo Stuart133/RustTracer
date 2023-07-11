@@ -2,7 +2,7 @@ use nalgebra::Unit;
 
 use crate::{
     hittable::{Hittable, HittableList},
-    math::{random_in_hemisphere, random_in_unit_sphere, random_unit_vector, Color, Point, Vector},
+    math::{random_unit_vector, Color, Point, Vector},
     MIN_INTERSECTION_DISTANCE,
 };
 

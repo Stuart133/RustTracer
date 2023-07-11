@@ -71,6 +71,6 @@ mod tests {
         let second_hit = sphere.hit(&Ray::new(hit.p, hit.normal), 0.0000001, f64::MAX);
 
         assert_eq!(Face::Front, hit.face);
-        assert_eq!(None, second_hit);
+        assert!(second_hit.is_none());
     }
 }
