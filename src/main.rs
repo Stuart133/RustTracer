@@ -8,6 +8,9 @@ use std::rc::Rc;
 
 use crate::{camera::Camera, hittable::HittableList, math::Color, math::Point, objects::Sphere};
 
+// Quick hack to avoid floating point uncertainty causing self intersections
+const MIN_INTERSECTION_DISTANCE: f64 = 0.0000000001;
+
 const SAMPLES_PER_PIXEL: i64 = 100;
 const MAX_DEPTH: i64 = 50;
 const ASPECT_RATIO: f64 = 16.0 / 9.0;
@@ -19,7 +22,7 @@ fn main() {
     // World
     let mut world = HittableList::new();
     world.add(Rc::new(Sphere::new(Point::new(0.0, 0.0, -1.0), 0.5)));
-    // world.add(Rc::new(Sphere::new(Point::new(0.0, -100.5, -1.0), 100.0)));
+    world.add(Rc::new(Sphere::new(Point::new(0.0, -100.5, -1.0), 100.0)));
 
     // Camera
     let camera = Camera::new();

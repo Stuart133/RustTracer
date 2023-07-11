@@ -46,3 +46,31 @@ impl Hittable for Sphere {
         ))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::{
+        hittable::{Face, Hittable},
+        math::{Point, Vector},
+        ray::Ray,
+    };
+
+    use super::Sphere;
+
+    #[test]
+    pub fn outward_ray_hit() {
+        let sphere = Sphere::new(Point::new(0.0, 0.0, -1.0), 0.5);
+
+        // This looks a bit random, but was a ray causing trouble on reflection due to 0 point intersection
+        let ray = Ray::new(
+            Point::new(0.0, 0.0, 0.0),
+            Vector::new(-0.07757490284849644, 0.5715330690568323, -1.0),
+        );
+
+        let hit = sphere.hit(&ray, 0.0, f64::MAX).unwrap();
+        let second_hit = sphere.hit(&Ray::new(hit.p, hit.normal), 0.0000001, f64::MAX);
+
+        assert_eq!(Face::Front, hit.face);
+        assert_eq!(None, second_hit);
+    }
+}

@@ -3,8 +3,10 @@ use nalgebra::Unit;
 use crate::{
     hittable::{Hittable, HittableList},
     math::{random_in_unit_sphere, Color, Point, Vector},
+    MIN_INTERSECTION_DISTANCE,
 };
 
+#[derive(Debug)]
 pub struct Ray {
     origin: Point,
     direction: Vector,
@@ -36,11 +38,11 @@ impl Ray {
             return Color::new(0.0, 0.0, 0.0);
         }
 
-        match world.hit(self, 0.0, f64::MAX) {
+        match world.hit(self, MIN_INTERSECTION_DISTANCE, f64::MAX) {
             Some(hit) => {
-                // let target = hit.p + hit.normal + random_in_unit_sphere();
+                let target = hit.p + hit.normal + random_in_unit_sphere();
                 // 0.5 * (hit.normal + Color::new(1.0, 1.0, 1.0))
-                0.5 * Ray::new(hit.p, hit.normal).color(world, depth - 1)
+                0.5 * Ray::new(hit.p, target - hit.p).color(world, depth - 1)
             }
             None => {
                 let t = 0.5 * (Unit::new_normalize(self.direction).y + 1.0);

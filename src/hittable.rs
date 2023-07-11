@@ -42,6 +42,7 @@ impl Hittable for HittableList {
     }
 }
 
+#[derive(Debug, PartialEq)]
 pub struct HitRecord {
     pub p: Point,
     pub t: f64,
@@ -52,7 +53,8 @@ pub struct HitRecord {
 impl HitRecord {
     pub fn new(p: Point, t: f64, outward_normal: Vector, ray: &Ray) -> Self {
         if ray.direction().dot(&outward_normal) > 0.0 {
-            // eprintln!("Inside the place");
+            eprintln!("Inside the place at {p}");
+            panic!();
             HitRecord {
                 p,
                 t,
@@ -70,6 +72,7 @@ impl HitRecord {
     }
 }
 
+#[derive(Debug, PartialEq, Eq)]
 pub enum Face {
     Front,
     Back,
