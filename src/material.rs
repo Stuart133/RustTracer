@@ -3,7 +3,7 @@ use nalgebra::Unit;
 use crate::{
     hittable::{Face, HitRecord},
     math::{near_zero, random_in_unit_sphere, random_unit_vector, Color, Vector},
-    ray::{self, Ray},
+    ray::Ray,
 };
 
 pub trait Material {
@@ -83,10 +83,17 @@ impl Material for Dielectric {
         };
 
         let unit_direction = Unit::new_normalize(*ray_in.direction());
-        let refracted = refract(&unit_direction, &hit.normal, refraction_ratio);
+        let cos_theta = -unit_direction.dot(&hit.normal).min(1.0);
+        let sin_theta = (1.0 - cos_theta.powi(2)).sqrt();
+
+        let direction = if refraction_ratio * sin_theta > 1.0 {
+            reflect(&unit_direction, &hit.normal)
+        } else {
+            refract(&unit_direction, &hit.normal, refraction_ratio)
+        };
 
         Some(ScatterRecord {
-            ray: Ray::new(hit.p, refracted),
+            ray: Ray::new(hit.p, direction),
             attentuation: Color::new(1.0, 1.0, 1.0),
         })
     }
@@ -99,6 +106,7 @@ pub fn reflect(vector: &Vector, normal: &Vector) -> Vector {
 
 pub fn refract(uv: &Vector, normal: &Vector, etai_over_etat: f64) -> Vector {
     let cos_theta = (-uv).dot(normal).min(1.0);
+
     let r_out_perpendicular = etai_over_etat * (uv + cos_theta * normal);
     let r_out_parallel = -(1.0 - r_out_perpendicular.magnitude_squared()).abs().sqrt() * normal;
 
