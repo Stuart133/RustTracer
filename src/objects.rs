@@ -1,8 +1,10 @@
 use std::sync::Arc;
 
 use crate::{
+    aabb::AABB,
     hittable::{HitRecord, Hittable},
     material::Material,
+    math::Vector,
     ray::Ray,
     Point,
 };
@@ -52,6 +54,13 @@ impl Hittable for Sphere {
             (ray.at(root) - self.center) / self.radius,
             ray,
             self.material.clone(),
+        ))
+    }
+
+    fn bounding_box(&self, start_time: f64, end_time: f64) -> Option<crate::aabb::AABB> {
+        Some(AABB::new(
+            self.center - Vector::new(self.radius, self.radius, self.radius),
+            self.center + Vector::new(self.radius, self.radius, self.radius),
         ))
     }
 }
@@ -121,6 +130,19 @@ impl Hittable for MovingSphere {
             ray,
             self.material.clone(),
         ))
+    }
+
+    fn bounding_box(&self, start_time: f64, end_time: f64) -> Option<AABB> {
+        let start_box = AABB::new(
+            self.center(self.start_time) - Vector::new(self.radius, self.radius, self.radius),
+            self.center(self.start_time) + Vector::new(self.radius, self.radius, self.radius),
+        );
+        let end_box = AABB::new(
+            self.center(self.end_time) - Vector::new(self.radius, self.radius, self.radius),
+            self.center(self.end_time) + Vector::new(self.radius, self.radius, self.radius),
+        );
+
+        Some(AABB::surrounding_box(&start_box, &end_box))
     }
 }
 

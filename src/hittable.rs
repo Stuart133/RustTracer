@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use crate::{
+    aabb::AABB,
     material::{Dielectric, Lambertian, Material, Metal},
     math::{random_color, random_range, Color, Vector},
     objects::{MovingSphere, Sphere},
@@ -10,6 +11,7 @@ use crate::{
 
 pub trait Hittable: Sync {
     fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord>;
+    fn bounding_box(&self, start_time: f64, end_time: f64) -> Option<AABB>;
 }
 
 pub struct HittableList {
@@ -117,6 +119,29 @@ impl Hittable for HittableList {
         }
 
         hit_record
+    }
+
+    fn bounding_box(&self, start_time: f64, end_time: f64) -> Option<AABB> {
+        if self.objects.is_empty() {
+            return None;
+        }
+
+        let mut outer_box = None;
+
+        // TODO: Ask Merlin about mapping this properly
+        for object in self.objects.iter() {
+            match object.bounding_box(start_time, end_time) {
+                Some(aabb) => match outer_box {
+                    Some(inner_aabb) => {
+                        outer_box = Some(AABB::surrounding_box(&aabb, &inner_aabb));
+                    }
+                    None => outer_box = Some(aabb),
+                },
+                None => return None,
+            }
+        }
+
+        None
     }
 }
 

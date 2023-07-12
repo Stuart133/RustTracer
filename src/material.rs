@@ -3,7 +3,7 @@ use nalgebra::Unit;
 use crate::{
     hittable::{Face, HitRecord},
     math::{near_zero, random_in_unit_sphere, random_unit_vector, Color, Vector},
-    ray::{self, Ray},
+    ray::Ray,
 };
 
 pub trait Material: Sync + Send {
