@@ -90,7 +90,6 @@ fn main() {
 fn average_pixel(pixel_color: Color, samples_per_pixel: u64) -> Color {
     let scale = 1.0 / samples_per_pixel as f64;
 
-    // Average pixel samples and perform a quick gamma correction
     Color::new(
         pixel_color.x * scale,
         pixel_color.y * scale,
