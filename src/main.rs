@@ -62,12 +62,18 @@ fn main() {
     )));
 
     // Camera
+    let lookfrom = Point::new(3.0, 3.0, 2.0);
+    let lookat = Point::new(0.0, 0.0, -1.0);
+    let dist_to_focus = (lookfrom - lookat).magnitude();
+
     let camera = Camera::new(
-        Point::new(-2.0, 2.0, 1.0),
-        Point::new(0.0, 0.0, -1.0),
+        lookfrom,
+        lookat,
         Vector::new(0.0, 1.0, 0.0),
         20.0,
         ASPECT_RATIO,
+        2.0,
+        dist_to_focus,
     );
 
     // Render

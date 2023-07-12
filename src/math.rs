@@ -23,6 +23,15 @@ pub fn random_vector_range(min: f64, max: f64) -> Vector {
     )
 }
 
+pub fn random_in_unit_disk() -> Vector {
+    loop {
+        let p = Vector::new(random_range(-1.0, 1.0), random_range(-1.0, 1.0), 0.0);
+        if p.magnitude_squared() < 1.0 {
+            return p;
+        }
+    }
+}
+
 pub fn random_in_unit_sphere() -> Vector {
     loop {
         let p = random_vector_range(-1.0, 1.0);
