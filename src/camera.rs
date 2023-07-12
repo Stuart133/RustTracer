@@ -1,6 +1,11 @@
-use crate::{math::Vector, ray::Ray, Point, ASPECT_RATIO};
+use nalgebra::Unit;
+
+use crate::{math::Vector, ray::Ray, Point};
 
 pub struct Camera {
+    // lookfrom: Point,
+    // lookat: Point,
+    // view_up: Vector,
     origin: Point,
     lower_left_corner: Point,
     horizontal: Vector,
@@ -8,16 +13,27 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn new() -> Self {
-        let viewport_height = 2.0;
-        let viewport_width = ASPECT_RATIO * viewport_height;
-        let focal_length = 1.0;
+    pub fn new(
+        lookfrom: Point,
+        lookat: Point,
+        view_up: Vector,
+        vfov: f64,
+        aspect_ratio: f64,
+    ) -> Self {
+        let theta = vfov.to_radians();
+        let h = (theta / 2.0).tan();
+        let viewport_height = 2.0 * h;
+        let viewport_width = aspect_ratio * viewport_height;
 
-        let origin = Point::new(0.0, 0.0, 0.0);
-        let horizontal = Vector::new(viewport_width, 0.0, 0.0);
-        let vertical = Vector::new(0.0, viewport_height, 0.0);
-        let lower_left_corner =
-            origin - horizontal / 2.0 - vertical / 2.0 - Vector::new(0.0, 0.0, focal_length);
+        // Create an orthonormal basis for the camera coordinate system
+        let w = Unit::new_normalize(lookfrom - lookat);
+        let u = Unit::new_normalize(view_up.cross(&w));
+        let v = w.cross(&u);
+
+        let origin = lookfrom;
+        let horizontal = viewport_width * *u;
+        let vertical = viewport_height * v;
+        let lower_left_corner = origin - horizontal / 2.0 - vertical / 2.0 - *w;
 
         Self {
             origin,
@@ -27,10 +43,10 @@ impl Camera {
         }
     }
 
-    pub fn get_ray(&self, u: f64, v: f64) -> Ray {
+    pub fn get_ray(&self, s: f64, t: f64) -> Ray {
         Ray::new(
             self.origin,
-            self.lower_left_corner + u * self.horizontal + v * self.vertical - self.origin,
+            self.lower_left_corner + s * self.horizontal + t * self.vertical - self.origin,
         )
     }
 }
