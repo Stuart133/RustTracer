@@ -17,7 +17,7 @@ use rayon::prelude::*;
 // Quick hack to avoid floating point uncertainty causing self intersections
 const MIN_INTERSECTION_DISTANCE: f64 = 0.0001;
 
-const THREADS: u64 = 10;
+const THREADS: u64 = 16;
 const SAMPLES_PER_PIXEL: u64 = 500;
 const SAMPLES_PER_PIXEL_PER_THREAD: u64 = SAMPLES_PER_PIXEL / THREADS;
 const MAX_DEPTH: i64 = 50;
@@ -55,7 +55,9 @@ fn main() {
             let mut image = vec![];
 
             for j in (0..IMAGE_HEIGHT).rev() {
-                eprintln!("Thread {t}, scanlines remaining: {j}");
+                if j % 10 == 0 {
+                    eprintln!("Thread {t}, scanlines remaining: {j}");
+                }
                 for i in 0..IMAGE_WIDTH {
                     let mut pixel_color = Color::new(0.0, 0.0, 0.0);
                     for _ in 0..SAMPLES_PER_PIXEL_PER_THREAD {
@@ -73,8 +75,13 @@ fn main() {
         })
         .collect();
 
-    for pixel in images[0].iter() {
-        write_color(*pixel, 1);
+    for i in 0..images[0].len() {
+        // Add up all the values for each pixel in each image
+        let color = images
+            .iter()
+            .fold(Color::new(0.0, 0.0, 0.0), |acc, image| acc + image[i]);
+
+        write_pixel(average_pixel(color, THREADS));
     }
 
     eprintln!("Done");
@@ -85,24 +92,22 @@ fn average_pixel(pixel_color: Color, samples_per_pixel: u64) -> Color {
 
     // Average pixel samples and perform a quick gamma correction
     Color::new(
-        (pixel_color.x * scale).sqrt(),
-        (pixel_color.y * scale).sqrt(),
-        (pixel_color.z * scale).sqrt(),
+        pixel_color.x * scale,
+        pixel_color.y * scale,
+        pixel_color.z * scale,
     )
 }
 
-fn write_color(pixel_color: Color, samples_per_pixel: u64) {
-    let scale = 1.0 / samples_per_pixel as f64;
-
-    // Average pixel samples and perform a quick gamma correction
-    let r = (pixel_color.x * scale).sqrt();
-    let g = (pixel_color.y * scale).sqrt();
-    let b = (pixel_color.z * scale).sqrt();
+fn write_pixel(pixel_color: Color) {
+    // Perform gamma correction
+    let r = pixel_color.x.sqrt();
+    let g = pixel_color.y.sqrt();
+    let b = pixel_color.z.sqrt();
 
     println!(
         "{} {} {}",
         (256.0 * r.clamp(0.0, 0.999)) as u64,
         (256.0 * g.clamp(0.0, 0.999)) as u64,
         (256.0 * b.clamp(0.0, 0.999)) as u64
-    );
+    )
 }
