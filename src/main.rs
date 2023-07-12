@@ -5,66 +5,34 @@ mod math;
 mod objects;
 mod ray;
 
-use std::rc::Rc;
-
 use crate::{
     camera::Camera,
     hittable::HittableList,
-    material::{Dielectric, Lambertian, Metal},
     math::Point,
     math::{Color, Vector},
-    objects::Sphere,
 };
+
+use rayon::prelude::*;
 
 // Quick hack to avoid floating point uncertainty causing self intersections
 const MIN_INTERSECTION_DISTANCE: f64 = 0.0001;
 
-const SAMPLES_PER_PIXEL: i64 = 100;
+const THREADS: u64 = 10;
+const SAMPLES_PER_PIXEL: u64 = 500;
+const SAMPLES_PER_PIXEL_PER_THREAD: u64 = SAMPLES_PER_PIXEL / THREADS;
 const MAX_DEPTH: i64 = 50;
-const ASPECT_RATIO: f64 = 16.0 / 9.0;
 
-const IMAGE_WIDTH: i64 = 400;
+const ASPECT_RATIO: f64 = 3.0 / 2.0;
+const IMAGE_WIDTH: i64 = 1200;
 const IMAGE_HEIGHT: i64 = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as i64;
 
 fn main() {
     // World
-    let mut world = HittableList::new();
-
-    let material_ground = Rc::new(Lambertian::new(Color::new(0.8, 0.8, 0.0)));
-    let material_center = Rc::new(Lambertian::new(Color::new(0.1, 0.2, 0.5)));
-    let material_left = Rc::new(Dielectric::new(1.5));
-    let material_right = Rc::new(Metal::new(Color::new(0.8, 0.6, 0.2), 0.0));
-
-    world.add(Rc::new(Sphere::new(
-        Point::new(0.0, -100.5, -1.0),
-        100.0,
-        material_ground,
-    )));
-    world.add(Rc::new(Sphere::new(
-        Point::new(0.0, 0.0, -1.0),
-        0.5,
-        material_center,
-    )));
-    world.add(Rc::new(Sphere::new(
-        Point::new(-1.0, 0.0, -1.0),
-        0.5,
-        material_left.clone(),
-    )));
-    world.add(Rc::new(Sphere::new(
-        Point::new(-1.0, 0.0, -1.0),
-        -0.45,
-        material_left,
-    )));
-    world.add(Rc::new(Sphere::new(
-        Point::new(1.0, 0.0, -1.0),
-        0.5,
-        material_right,
-    )));
+    let world = HittableList::random_scene();
 
     // Camera
-    let lookfrom = Point::new(3.0, 3.0, 2.0);
-    let lookat = Point::new(0.0, 0.0, -1.0);
-    let dist_to_focus = (lookfrom - lookat).magnitude();
+    let lookfrom = Point::new(13.0, 2.0, 3.0);
+    let lookat = Point::new(0.0, 0.0, 0.0);
 
     let camera = Camera::new(
         lookfrom,
@@ -72,8 +40,8 @@ fn main() {
         Vector::new(0.0, 1.0, 0.0),
         20.0,
         ASPECT_RATIO,
-        2.0,
-        dist_to_focus,
+        0.1,
+        10.0,
     );
 
     // Render
@@ -81,25 +49,49 @@ fn main() {
     println!("{IMAGE_WIDTH} {IMAGE_HEIGHT}");
     println!("255");
 
-    for j in (0..IMAGE_HEIGHT).rev() {
-        eprintln!("Scanlines remaining: {j}");
-        for i in 0..IMAGE_WIDTH {
-            let mut pixel_color = Color::new(0.0, 0.0, 0.0);
-            for _ in 0..SAMPLES_PER_PIXEL {
-                let u = (i as f64 + rand::random::<f64>()) / (IMAGE_WIDTH - 1) as f64;
-                let v = (j as f64 + rand::random::<f64>()) / (IMAGE_HEIGHT - 1) as f64;
-                let ray = camera.get_ray(u, v);
-                pixel_color += ray.color(&world, MAX_DEPTH);
+    let images: Vec<Vec<Color>> = (0..THREADS)
+        .into_par_iter()
+        .map(|t| {
+            let mut image = vec![];
+
+            for j in (0..IMAGE_HEIGHT).rev() {
+                eprintln!("Thread {t}, scanlines remaining: {j}");
+                for i in 0..IMAGE_WIDTH {
+                    let mut pixel_color = Color::new(0.0, 0.0, 0.0);
+                    for _ in 0..SAMPLES_PER_PIXEL_PER_THREAD {
+                        let u = (i as f64 + rand::random::<f64>()) / (IMAGE_WIDTH - 1) as f64;
+                        let v = (j as f64 + rand::random::<f64>()) / (IMAGE_HEIGHT - 1) as f64;
+                        let ray = camera.get_ray(u, v);
+                        pixel_color += ray.color(&world, MAX_DEPTH);
+                    }
+
+                    image.push(average_pixel(pixel_color, SAMPLES_PER_PIXEL_PER_THREAD))
+                }
             }
 
-            write_color(pixel_color, SAMPLES_PER_PIXEL);
-        }
+            image
+        })
+        .collect();
+
+    for pixel in images[0].iter() {
+        write_color(*pixel, 1);
     }
 
     eprintln!("Done");
 }
 
-fn write_color(pixel_color: Color, samples_per_pixel: i64) {
+fn average_pixel(pixel_color: Color, samples_per_pixel: u64) -> Color {
+    let scale = 1.0 / samples_per_pixel as f64;
+
+    // Average pixel samples and perform a quick gamma correction
+    Color::new(
+        (pixel_color.x * scale).sqrt(),
+        (pixel_color.y * scale).sqrt(),
+        (pixel_color.z * scale).sqrt(),
+    )
+}
+
+fn write_color(pixel_color: Color, samples_per_pixel: u64) {
     let scale = 1.0 / samples_per_pixel as f64;
 
     // Average pixel samples and perform a quick gamma correction

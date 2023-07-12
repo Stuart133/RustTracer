@@ -6,7 +6,7 @@ use crate::{
     ray::Ray,
 };
 
-pub trait Material {
+pub trait Material: Sync + Send {
     fn scatter(&self, ray_in: &Ray, hit: &HitRecord) -> Option<ScatterRecord>;
 }
 

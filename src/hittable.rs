@@ -1,13 +1,19 @@
-use std::rc::Rc;
+use std::sync::Arc;
 
-use crate::{material::Material, math::Vector, ray::Ray, Point};
+use crate::{
+    material::{Dielectric, Lambertian, Material, Metal},
+    math::{random_color, random_range, Color, Vector},
+    objects::Sphere,
+    ray::Ray,
+    Point,
+};
 
-pub trait Hittable {
+pub trait Hittable: Sync {
     fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord>;
 }
 
 pub struct HittableList {
-    objects: Vec<Rc<dyn Hittable>>,
+    objects: Vec<Box<dyn Hittable>>,
 }
 
 impl HittableList {
@@ -15,17 +21,80 @@ impl HittableList {
         Self { objects: vec![] }
     }
 
-    pub fn from_hittable(hittable: Rc<dyn Hittable>) -> Self {
-        Self {
-            objects: vec![hittable],
+    pub fn random_scene() -> Self {
+        let mut world = HittableList::new();
+
+        let ground_material = Arc::new(Lambertian::new(Color::new(0.5, 0.5, 0.5)));
+        world.add(Box::new(Sphere::new(
+            Point::new(0.0, -1000.0, 0.0),
+            1000.0,
+            ground_material,
+        )));
+
+        for a in -11..11 {
+            for b in -11..11 {
+                let choose_material: f64 = rand::random();
+                let center = Point::new(
+                    a as f64 + 0.9 * rand::random::<f64>(),
+                    0.2,
+                    b as f64 + 0.9 * rand::random::<f64>(),
+                );
+
+                if (center - Point::new(4.0, 0.2, 0.0)).magnitude() > 0.9 {
+                    match choose_material {
+                        x if x < 0.8 => {
+                            // Diffuse
+                            world.add(Box::new(Sphere::new(
+                                center,
+                                0.2,
+                                Arc::new(Lambertian::new(random_color(0.0, 1.0))),
+                            )))
+                        }
+                        x if x < 0.95 => {
+                            // Metal
+                            world.add(Box::new(Sphere::new(
+                                center,
+                                0.2,
+                                Arc::new(Metal::new(
+                                    random_color(0.5, 1.0),
+                                    random_range(0.0, 0.5),
+                                )),
+                            )))
+                        }
+                        _ => {
+                            // Glass
+                            world.add(Box::new(Sphere::new(
+                                center,
+                                0.2,
+                                Arc::new(Dielectric::new(1.5)),
+                            )))
+                        }
+                    }
+                }
+
+                // Big spheres
+                world.add(Box::new(Sphere::new(
+                    Point::new(0.0, 1.0, 0.0),
+                    1.0,
+                    Arc::new(Dielectric::new(1.5)),
+                )));
+                world.add(Box::new(Sphere::new(
+                    Point::new(-4.0, 1.0, 0.0),
+                    1.0,
+                    Arc::new(Lambertian::new(Color::new(0.4, 0.2, 0.1))),
+                )));
+                world.add(Box::new(Sphere::new(
+                    Point::new(4.0, 1.0, 0.0),
+                    1.0,
+                    Arc::new(Metal::new(Color::new(0.7, 0.6, 0.5), 0.0)),
+                )));
+            }
         }
+
+        world
     }
 
-    pub fn clear(&mut self) {
-        self.objects.clear()
-    }
-
-    pub fn add(&mut self, hittable: Rc<dyn Hittable>) {
+    pub fn add(&mut self, hittable: Box<dyn Hittable>) {
         self.objects.push(hittable)
     }
 }
@@ -50,7 +119,7 @@ pub struct HitRecord {
     pub p: Point,
     pub t: f64,
     pub normal: Vector,
-    pub material: Rc<dyn Material>,
+    pub material: Arc<dyn Material>,
     pub face: Face,
 }
 
@@ -60,7 +129,7 @@ impl HitRecord {
         t: f64,
         outward_normal: Vector,
         ray: &Ray,
-        material: Rc<dyn Material>,
+        material: Arc<dyn Material>,
     ) -> Self {
         if ray.direction().dot(&outward_normal) > 0.0 {
             HitRecord {

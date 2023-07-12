@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::sync::Arc;
 
 use crate::{
     hittable::{HitRecord, Hittable},
@@ -10,11 +10,11 @@ use crate::{
 pub struct Sphere {
     center: Point,
     radius: f64,
-    material: Rc<dyn Material>,
+    material: Arc<dyn Material>,
 }
 
 impl Sphere {
-    pub fn new(center: Point, radius: f64, material: Rc<dyn Material>) -> Self {
+    pub fn new(center: Point, radius: f64, material: Arc<dyn Material>) -> Self {
         Self {
             center,
             radius,
@@ -58,7 +58,7 @@ impl Hittable for Sphere {
 
 #[cfg(test)]
 mod tests {
-    use std::rc::Rc;
+    use std::sync::Arc;
 
     use crate::{
         hittable::{Face, Hittable},
@@ -74,7 +74,7 @@ mod tests {
         let sphere = Sphere::new(
             Point::new(0.0, 0.0, -1.0),
             0.5,
-            Rc::new(Lambertian::new(Color::new(1.0, 1.0, 1.0))),
+            Arc::new(Lambertian::new(Color::new(1.0, 1.0, 1.0))),
         );
 
         // This looks a bit random, but was a ray causing trouble on reflection due to 0 point intersection

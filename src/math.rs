@@ -10,8 +10,12 @@ pub fn random_range(min: f64, max: f64) -> f64 {
 }
 
 #[inline]
-pub fn random_vector() -> Vector {
-    Vector::new(rand::random(), rand::random(), rand::random())
+pub fn random_color(min: f64, max: f64) -> Color {
+    Color::new(
+        random_range(min, max),
+        random_range(min, max),
+        random_range(min, max),
+    )
 }
 
 #[inline]
