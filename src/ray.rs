@@ -10,11 +10,16 @@ use crate::{
 pub struct Ray {
     origin: Point,
     direction: Vector,
+    time: f64,
 }
 
 impl Ray {
-    pub fn new(origin: Point, direction: Vector) -> Self {
-        Self { origin, direction }
+    pub fn new(origin: Point, direction: Vector, time: f64) -> Self {
+        Self {
+            origin,
+            direction,
+            time,
+        }
     }
 
     #[inline]
@@ -30,6 +35,11 @@ impl Ray {
     #[inline]
     pub fn origin(&self) -> &Point {
         &self.origin
+    }
+
+    #[inline]
+    pub fn time(&self) -> f64 {
+        self.time
     }
 
     pub fn color(&self, world: &HittableList, depth: i64) -> Color {

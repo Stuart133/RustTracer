@@ -3,7 +3,7 @@ use nalgebra::Unit;
 use crate::{
     hittable::{Face, HitRecord},
     math::{near_zero, random_in_unit_sphere, random_unit_vector, Color, Vector},
-    ray::Ray,
+    ray::{self, Ray},
 };
 
 pub trait Material: Sync + Send {
@@ -27,7 +27,7 @@ impl Lambertian {
 
 impl Material for Lambertian {
     // A diffuse scatter that produces a lambertian distribution (Proportional to cos(phi))
-    fn scatter(&self, _: &Ray, hit: &HitRecord) -> Option<ScatterRecord> {
+    fn scatter(&self, ray_in: &Ray, hit: &HitRecord) -> Option<ScatterRecord> {
         let mut scatter_direction = hit.normal + random_unit_vector();
 
         // Catch degenerate scatter direction
@@ -36,7 +36,7 @@ impl Material for Lambertian {
         }
 
         Some(ScatterRecord {
-            ray: Ray::new(hit.p, scatter_direction),
+            ray: Ray::new(hit.p, scatter_direction, ray_in.time()),
             attentuation: self.albedo,
         })
     }
@@ -59,7 +59,11 @@ impl Material for Metal {
 
         // TODO: Absorb rays which scatter inside the original object
         Some(ScatterRecord {
-            ray: Ray::new(hit.p, reflected + self.fuzz * random_in_unit_sphere()),
+            ray: Ray::new(
+                hit.p,
+                reflected + self.fuzz * random_in_unit_sphere(),
+                ray_in.time(),
+            ),
             attentuation: self.albedo,
         })
     }
@@ -102,7 +106,7 @@ impl Material for Dielectric {
         };
 
         Some(ScatterRecord {
-            ray: Ray::new(hit.p, direction),
+            ray: Ray::new(hit.p, direction, ray_in.time()),
             attentuation: Color::new(1.0, 1.0, 1.0),
         })
     }

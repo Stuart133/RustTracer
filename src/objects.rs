@@ -56,6 +56,74 @@ impl Hittable for Sphere {
     }
 }
 
+pub struct MovingSphere {
+    start_center: Point,
+    end_center: Point,
+    start_time: f64,
+    end_time: f64,
+    radius: f64,
+    material: Arc<dyn Material>,
+}
+
+impl MovingSphere {
+    pub fn new(
+        start_center: Point,
+        end_center: Point,
+        start_time: f64,
+        end_time: f64,
+        radius: f64,
+        material: Arc<dyn Material>,
+    ) -> Self {
+        Self {
+            start_center,
+            end_center,
+            start_time,
+            end_time,
+            radius,
+            material,
+        }
+    }
+
+    fn center(&self, time: f64) -> Point {
+        self.start_center
+            + ((time - self.start_time) / (self.end_time - self.start_time))
+                * (self.end_center - self.start_center)
+    }
+}
+
+impl Hittable for MovingSphere {
+    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
+        let oc = ray.origin() - self.center(ray.time());
+        let a = ray.direction().magnitude_squared();
+        let half_b = oc.dot(ray.direction());
+        let c = oc.magnitude_squared() - self.radius.powi(2);
+
+        // Check the determinant of the intersection quadratic implies real solutions
+        let discriminant = half_b.powi(2) - a * c;
+        if discriminant < 0.0 {
+            return None;
+        }
+
+        // Find the nearest root in the hit range
+        let sqrtd = discriminant.sqrt();
+        let mut root = (-half_b - sqrtd) / a;
+        if root < t_min || root > t_max {
+            root = (-half_b + sqrtd) / a;
+            if root < t_min || root > t_max {
+                return None;
+            }
+        }
+
+        Some(HitRecord::new(
+            ray.at(root),
+            root,
+            (ray.at(root) - self.center(ray.time())) / self.radius,
+            ray,
+            self.material.clone(),
+        ))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use std::sync::Arc;
@@ -65,6 +133,7 @@ mod tests {
         material::Lambertian,
         math::{Color, Point, Vector},
         ray::Ray,
+        MIN_INTERSECTION_DISTANCE,
     };
 
     use super::Sphere;
@@ -81,10 +150,15 @@ mod tests {
         let ray = Ray::new(
             Point::new(0.0, 0.0, 0.0),
             Vector::new(-0.07757490284849644, 0.5715330690568323, -1.0),
+            0.0,
         );
 
         let hit = sphere.hit(&ray, 0.0, f64::MAX).unwrap();
-        let second_hit = sphere.hit(&Ray::new(hit.p, hit.normal), 0.0000001, f64::MAX);
+        let second_hit = sphere.hit(
+            &Ray::new(hit.p, hit.normal, 0.0),
+            MIN_INTERSECTION_DISTANCE,
+            f64::MAX,
+        );
 
         assert_eq!(Face::Front, hit.face);
         assert!(second_hit.is_none());

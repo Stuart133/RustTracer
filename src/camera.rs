@@ -1,7 +1,7 @@
 use nalgebra::Unit;
 
 use crate::{
-    math::{random_in_unit_disk, Vector},
+    math::{random_in_unit_disk, random_range, Vector},
     ray::Ray,
     Point,
 };
@@ -14,6 +14,8 @@ pub struct Camera {
     u: Vector,
     v: Vector,
     lens_radius: f64,
+    shutter_open: f64,
+    shutter_close: f64,
 }
 
 impl Camera {
@@ -25,6 +27,8 @@ impl Camera {
         aspect_ratio: f64,
         aperture: f64,
         focus_distance: f64,
+        shutter_open: f64,
+        shutter_close: f64,
     ) -> Self {
         let theta = vfov.to_radians();
         let h = (theta / 2.0).tan();
@@ -49,6 +53,8 @@ impl Camera {
             u,
             v,
             lens_radius: aperture / 2.0,
+            shutter_open,
+            shutter_close,
         }
     }
 
@@ -59,6 +65,7 @@ impl Camera {
         Ray::new(
             self.origin + offset,
             self.lower_left_corner + s * self.horizontal + t * self.vertical - self.origin - offset,
+            random_range(self.shutter_open, self.shutter_close),
         )
     }
 }

@@ -3,7 +3,7 @@ use std::sync::Arc;
 use crate::{
     material::{Dielectric, Lambertian, Material, Metal},
     math::{random_color, random_range, Color, Vector},
-    objects::Sphere,
+    objects::{MovingSphere, Sphere},
     ray::Ray,
     Point,
 };
@@ -44,8 +44,13 @@ impl HittableList {
                     match choose_material {
                         x if x < 0.8 => {
                             // Diffuse
-                            world.add(Box::new(Sphere::new(
+                            let end_center: nalgebra::OPoint<f64, nalgebra::Const<3>> =
+                                center + Vector::new(0.0, random_range(0.0, 0.5), 0.0);
+                            world.add(Box::new(MovingSphere::new(
                                 center,
+                                end_center,
+                                0.0,
+                                1.0,
                                 0.2,
                                 Arc::new(Lambertian::new(random_color(0.0, 1.0))),
                             )))

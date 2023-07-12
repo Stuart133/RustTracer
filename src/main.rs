@@ -18,12 +18,12 @@ use rayon::prelude::*;
 const MIN_INTERSECTION_DISTANCE: f64 = 0.0001;
 
 const THREADS: u64 = 16;
-const SAMPLES_PER_PIXEL: u64 = 500;
+const SAMPLES_PER_PIXEL: u64 = 100;
 const SAMPLES_PER_PIXEL_PER_THREAD: u64 = SAMPLES_PER_PIXEL / THREADS;
 const MAX_DEPTH: i64 = 50;
 
-const ASPECT_RATIO: f64 = 3.0 / 2.0;
-const IMAGE_WIDTH: i64 = 1200;
+const ASPECT_RATIO: f64 = 16.0 / 9.0;
+const IMAGE_WIDTH: i64 = 400;
 const IMAGE_HEIGHT: i64 = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as i64;
 
 fn main() {
@@ -42,6 +42,8 @@ fn main() {
         ASPECT_RATIO,
         0.1,
         10.0,
+        0.0,
+        1.0,
     );
 
     // Render
