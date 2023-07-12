@@ -66,7 +66,7 @@ impl HitRecord {
             HitRecord {
                 p,
                 t,
-                normal: outward_normal,
+                normal: -outward_normal,
                 material,
                 face: Face::Back,
             }
