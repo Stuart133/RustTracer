@@ -57,7 +57,7 @@ impl Hittable for Sphere {
         ))
     }
 
-    fn bounding_box(&self, start_time: f64, end_time: f64) -> Option<crate::aabb::AABB> {
+    fn bounding_box(&self, _: f64, _: f64) -> Option<crate::aabb::AABB> {
         Some(AABB::new(
             self.center - Vector::new(self.radius, self.radius, self.radius),
             self.center + Vector::new(self.radius, self.radius, self.radius),
@@ -134,12 +134,12 @@ impl Hittable for MovingSphere {
 
     fn bounding_box(&self, start_time: f64, end_time: f64) -> Option<AABB> {
         let start_box = AABB::new(
-            self.center(self.start_time) - Vector::new(self.radius, self.radius, self.radius),
-            self.center(self.start_time) + Vector::new(self.radius, self.radius, self.radius),
+            self.center(start_time) - Vector::new(self.radius, self.radius, self.radius),
+            self.center(start_time) + Vector::new(self.radius, self.radius, self.radius),
         );
         let end_box = AABB::new(
-            self.center(self.end_time) - Vector::new(self.radius, self.radius, self.radius),
-            self.center(self.end_time) + Vector::new(self.radius, self.radius, self.radius),
+            self.center(end_time) - Vector::new(self.radius, self.radius, self.radius),
+            self.center(end_time) + Vector::new(self.radius, self.radius, self.radius),
         );
 
         Some(AABB::surrounding_box(&start_box, &end_box))

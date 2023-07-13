@@ -9,13 +9,13 @@ use crate::{
     Point,
 };
 
-pub trait Hittable: Sync {
+pub trait Hittable: Sync + Send {
     fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord>;
     fn bounding_box(&self, start_time: f64, end_time: f64) -> Option<AABB>;
 }
 
 pub struct HittableList {
-    objects: Vec<Box<dyn Hittable>>,
+    objects: Vec<Arc<dyn Hittable>>,
 }
 
 impl HittableList {
@@ -27,7 +27,7 @@ impl HittableList {
         let mut world = HittableList::new();
 
         let ground_material = Arc::new(Lambertian::new(Color::new(0.5, 0.5, 0.5)));
-        world.add(Box::new(Sphere::new(
+        world.add(Arc::new(Sphere::new(
             Point::new(0.0, -1000.0, 0.0),
             1000.0,
             ground_material,
@@ -48,7 +48,7 @@ impl HittableList {
                             // Diffuse
                             let end_center: nalgebra::OPoint<f64, nalgebra::Const<3>> =
                                 center + Vector::new(0.0, random_range(0.0, 0.5), 0.0);
-                            world.add(Box::new(MovingSphere::new(
+                            world.add(Arc::new(MovingSphere::new(
                                 center,
                                 end_center,
                                 0.0,
@@ -59,7 +59,7 @@ impl HittableList {
                         }
                         x if x < 0.95 => {
                             // Metal
-                            world.add(Box::new(Sphere::new(
+                            world.add(Arc::new(Sphere::new(
                                 center,
                                 0.2,
                                 Arc::new(Metal::new(
@@ -70,7 +70,7 @@ impl HittableList {
                         }
                         _ => {
                             // Glass
-                            world.add(Box::new(Sphere::new(
+                            world.add(Arc::new(Sphere::new(
                                 center,
                                 0.2,
                                 Arc::new(Dielectric::new(1.5)),
@@ -80,17 +80,17 @@ impl HittableList {
                 }
 
                 // Big spheres
-                world.add(Box::new(Sphere::new(
+                world.add(Arc::new(Sphere::new(
                     Point::new(0.0, 1.0, 0.0),
                     1.0,
                     Arc::new(Dielectric::new(1.5)),
                 )));
-                world.add(Box::new(Sphere::new(
+                world.add(Arc::new(Sphere::new(
                     Point::new(-4.0, 1.0, 0.0),
                     1.0,
                     Arc::new(Lambertian::new(Color::new(0.4, 0.2, 0.1))),
                 )));
-                world.add(Box::new(Sphere::new(
+                world.add(Arc::new(Sphere::new(
                     Point::new(4.0, 1.0, 0.0),
                     1.0,
                     Arc::new(Metal::new(Color::new(0.7, 0.6, 0.5), 0.0)),
@@ -101,8 +101,12 @@ impl HittableList {
         world
     }
 
-    pub fn add(&mut self, hittable: Box<dyn Hittable>) {
+    pub fn add(&mut self, hittable: Arc<dyn Hittable>) {
         self.objects.push(hittable)
+    }
+
+    pub fn as_raw(self) -> Vec<Arc<dyn Hittable>> {
+        self.objects
     }
 }
 

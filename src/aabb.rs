@@ -1,5 +1,6 @@
 use crate::{math::Point, ray::Ray};
 
+#[derive(Clone)]
 pub struct AABB {
     minimum: Point,
     maximum: Point,
@@ -23,6 +24,11 @@ impl AABB {
         );
 
         AABB::new(small, big)
+    }
+
+    #[inline]
+    pub fn minimum(&self) -> Point {
+        self.minimum
     }
 
     // TODO: Implement the optimized routine suggested here: https://raytracing.github.io/books/RayTracingTheNextWeek.html#boundingvolumehierarchies/anoptimizedaabbhitmethod
