@@ -23,7 +23,7 @@ impl HittableList {
         Self { objects: vec![] }
     }
 
-    pub fn easy_scene() -> Self {
+    pub fn random_scene(n: i64) -> Self {
         let mut world = HittableList::new();
 
         let ground_material = Arc::new(Lambertian::new(Color::new(0.5, 0.5, 0.5)));
@@ -33,27 +33,8 @@ impl HittableList {
             ground_material,
         )));
 
-        world.add(Arc::new(Sphere::new(
-            Point::new(0.0, 0.0, 0.0),
-            5.0,
-            Arc::new(Metal::new(random_color(0.5, 1.0), random_range(0.0, 0.5))),
-        )));
-
-        world
-    }
-
-    pub fn random_scene() -> Self {
-        let mut world = HittableList::new();
-
-        let ground_material = Arc::new(Lambertian::new(Color::new(0.5, 0.5, 0.5)));
-        world.add(Arc::new(Sphere::new(
-            Point::new(0.0, -1000.0, 0.0),
-            1000.0,
-            ground_material,
-        )));
-
-        for a in -11..11 {
-            for b in -11..11 {
+        for a in -n..n {
+            for b in -n..n {
                 let choose_material: f64 = rand::random();
                 let center = Point::new(
                     a as f64 + 0.9 * rand::random::<f64>(),

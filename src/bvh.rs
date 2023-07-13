@@ -18,17 +18,6 @@ pub struct BVHNode {
 }
 
 impl BVHNode {
-    pub fn new_debug(list: HittableList, start_time: f64, end_time: f64) -> Self {
-        let bound = list.bounding_box(start_time, end_time).unwrap();
-        let arc = Arc::new(list) as Arc<dyn Hittable>;
-
-        BVHNode {
-            aabb: bound,
-            left: arc.clone(),
-            right: arc.clone(),
-        }
-    }
-
     pub fn new(list: HittableList, start_time: f64, end_time: f64) -> Self {
         BVHNode::new_inner(&mut list.as_raw(), start_time, end_time)
     }
