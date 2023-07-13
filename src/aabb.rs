@@ -1,6 +1,6 @@
 use crate::{math::Point, ray::Ray};
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct AABB {
     minimum: Point,
     maximum: Point,
@@ -38,7 +38,9 @@ impl AABB {
             let t0 = (self.minimum[a] - ray.origin()[a] / ray.direction()[a])
                 .min(self.maximum[a] - ray.origin()[a] / ray.direction()[a]);
             let t1 = (self.minimum[a] - ray.origin()[a] / ray.direction()[a])
-                .min(self.maximum[a] - ray.origin()[a] / ray.direction()[a]);
+                .max(self.maximum[a] - ray.origin()[a] / ray.direction()[a]);
+
+            // println!("{} {} {}", a, t0, t1);
 
             if t1.min(t_max) <= t0.max(t_min) {
                 return false;
@@ -46,5 +48,25 @@ impl AABB {
         }
 
         true
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::{
+        math::{Point, Vector},
+        ray::Ray,
+    };
+
+    use super::AABB;
+
+    #[test]
+    pub fn hit_bounding_box() {
+        let aabb = AABB::new(Point::new(0.0, 0.0, 0.0), Point::new(1.0, 1.0, 1.0));
+        let ray_in_box = Ray::new(Point::new(0.5, 0.5, 0.5), Vector::new(1.0, 1.0, 1.0), 0.0);
+        let ray_out_box = Ray::new(Point::new(0.0, 0.0, -0.5), Vector::new(0.1, 0.1, 1.0), 0.0);
+
+        assert!(aabb.hit(&ray_in_box, f64::MIN, f64::MAX));
+        assert!(aabb.hit(&ray_out_box, f64::MIN, f64::MAX));
     }
 }

@@ -18,6 +18,17 @@ pub struct BVHNode {
 }
 
 impl BVHNode {
+    pub fn new_debug(list: HittableList, start_time: f64, end_time: f64) -> Self {
+        let bound = list.bounding_box(start_time, end_time).unwrap();
+        let arc = Arc::new(list) as Arc<dyn Hittable>;
+
+        BVHNode {
+            aabb: bound,
+            left: arc.clone(),
+            right: arc.clone(),
+        }
+    }
+
     pub fn new(list: HittableList, start_time: f64, end_time: f64) -> Self {
         BVHNode::new_inner(&mut list.as_raw(), start_time, end_time)
     }
@@ -67,12 +78,15 @@ impl Hittable for BVHNode {
         }
 
         match self.left.hit(ray, t_min, t_max) {
-            Some(hit) => self.right.hit(ray, t_min, hit.t),
+            Some(left_hit) => match self.right.hit(ray, t_min, left_hit.t) {
+                Some(right_hit) => Some(right_hit),
+                None => Some(left_hit),
+            },
             None => self.right.hit(ray, t_min, t_max),
         }
     }
 
-    fn bounding_box(&self, start_time: f64, end_time: f64) -> Option<AABB> {
+    fn bounding_box(&self, _: f64, _: f64) -> Option<AABB> {
         Some(self.aabb.clone())
     }
 }

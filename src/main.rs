@@ -7,7 +7,10 @@ mod math;
 mod objects;
 mod ray;
 
+use std::sync::Arc;
+
 use crate::{
+    bvh::BVHNode,
     camera::Camera,
     hittable::HittableList,
     math::Point,
@@ -20,7 +23,7 @@ use rayon::prelude::*;
 const MIN_INTERSECTION_DISTANCE: f64 = 0.0001;
 
 const THREADS: u64 = 16;
-const SAMPLES_PER_PIXEL: u64 = 100;
+const SAMPLES_PER_PIXEL: u64 = 500;
 const SAMPLES_PER_PIXEL_PER_THREAD: u64 = SAMPLES_PER_PIXEL / THREADS;
 const MAX_DEPTH: i64 = 50;
 
@@ -30,7 +33,10 @@ const IMAGE_HEIGHT: i64 = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as i64;
 
 fn main() {
     // World
-    let world = HittableList::random_scene();
+    let objects = HittableList::easy_scene();
+    let bvh = BVHNode::new_debug(objects, 0.0, 1.0);
+    let mut world = HittableList::new();
+    world.add(Arc::new(bvh));
 
     // Camera
     let lookfrom = Point::new(13.0, 2.0, 3.0);
@@ -40,7 +46,7 @@ fn main() {
         lookfrom,
         lookat,
         Vector::new(0.0, 1.0, 0.0),
-        20.0,
+        90.0,
         ASPECT_RATIO,
         0.1,
         10.0,
