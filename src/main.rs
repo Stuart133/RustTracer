@@ -6,17 +6,12 @@ mod material;
 mod math;
 mod objects;
 mod ray;
+mod scene;
 mod texture;
 
 use std::sync::Arc;
 
-use crate::{
-    bvh::BVHNode,
-    camera::Camera,
-    hittable::HittableList,
-    math::Point,
-    math::{Color, Vector},
-};
+use crate::{bvh::BVHNode, hittable::HittableList, math::Color, math::Point};
 
 use rayon::prelude::*;
 
@@ -33,27 +28,13 @@ const IMAGE_WIDTH: i64 = 400;
 const IMAGE_HEIGHT: i64 = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as i64;
 
 fn main() {
-    // World
-    let objects = HittableList::random_scene(5);
-    let bvh = BVHNode::new(objects, 0.0, 1.0);
+    // Scene
+    let scene = scene::two_spheres();
+
+    // BVH
+    let bvh = BVHNode::new(scene.objects, 0.0, 1.0);
     let mut world = HittableList::new();
     world.add(Arc::new(bvh));
-
-    // Camera
-    let lookfrom = Point::new(13.0, 2.0, 3.0);
-    let lookat = Point::new(0.0, 0.0, 0.0);
-
-    let camera = Camera::new(
-        lookfrom,
-        lookat,
-        Vector::new(0.0, 1.0, 0.0),
-        20.0,
-        ASPECT_RATIO,
-        0.0,
-        10.0,
-        0.0,
-        0.0,
-    );
 
     // Render
     println!("P3");
@@ -74,7 +55,7 @@ fn main() {
                     for _ in 0..SAMPLES_PER_PIXEL_PER_THREAD {
                         let u = (i as f64 + rand::random::<f64>()) / (IMAGE_WIDTH - 1) as f64;
                         let v = (j as f64 + rand::random::<f64>()) / (IMAGE_HEIGHT - 1) as f64;
-                        let ray = camera.get_ray(u, v);
+                        let ray = scene.camera.get_ray(u, v);
                         pixel_color += ray.color(&world, MAX_DEPTH);
                     }
 

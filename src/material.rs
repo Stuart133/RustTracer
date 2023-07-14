@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use nalgebra::Unit;
 
 use crate::{
@@ -17,16 +19,16 @@ pub struct ScatterRecord {
 }
 
 pub struct Lambertian {
-    albedo: Box<dyn Texture>,
+    albedo: Arc<dyn Texture>,
 }
 
 impl Lambertian {
-    pub fn new(albedo: Box<dyn Texture>) -> Self {
+    pub fn new(albedo: Arc<dyn Texture>) -> Self {
         Self { albedo }
     }
 
     pub fn new_from_color(albedo: Color) -> Self {
-        Self::new(Box::new(SolidColor::new(albedo)))
+        Self::new(Arc::new(SolidColor::new(albedo)))
     }
 }
 
