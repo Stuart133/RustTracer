@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{f64::consts::PI, sync::Arc};
 
 use crate::{
     aabb::AABB,
@@ -48,10 +48,15 @@ impl Hittable for Sphere {
             }
         }
 
+        let outward_normal = (ray.at(root) - self.center) / self.radius;
+        let (u, v) = get_sphere_uv(outward_normal.into());
+
         Some(HitRecord::new(
             ray.at(root),
             root,
-            (ray.at(root) - self.center) / self.radius,
+            u,
+            v,
+            outward_normal,
             ray,
             self.material.clone(),
         ))
@@ -123,10 +128,15 @@ impl Hittable for MovingSphere {
             }
         }
 
+        let outward_normal = (ray.at(root) - self.center(ray.time())) / self.radius;
+        let (u, v) = get_sphere_uv(outward_normal.into());
+
         Some(HitRecord::new(
             ray.at(root),
             root,
-            (ray.at(root) - self.center(ray.time())) / self.radius,
+            u,
+            v,
+            outward_normal,
             ray,
             self.material.clone(),
         ))
@@ -144,6 +154,14 @@ impl Hittable for MovingSphere {
 
         Some(AABB::surrounding_box(&start_box, &end_box))
     }
+}
+
+fn get_sphere_uv(p: Point) -> (f64, f64) {
+    // TODO: Understand this better: https://raytracing.github.io/books/RayTracingTheNextWeek.html#solidtextures/texturecoordinatesforspheres
+    let theta = (-p.y).acos();
+    let phi = (-p.z).atan2(p.x) + PI;
+
+    (phi / (2.0 * PI), theta / PI)
 }
 
 #[cfg(test)]
@@ -165,7 +183,7 @@ mod tests {
         let sphere = Sphere::new(
             Point::new(0.0, 0.0, -1.0),
             0.5,
-            Arc::new(Lambertian::new(Color::new(1.0, 1.0, 1.0))),
+            Arc::new(Lambertian::new_from_color(Color::new(1.0, 1.0, 1.0))),
         );
 
         // This looks a bit random, but was a ray causing trouble on reflection due to 0 point intersection

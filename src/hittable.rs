@@ -6,6 +6,7 @@ use crate::{
     math::{random_color, random_range, Color, Vector},
     objects::{MovingSphere, Sphere},
     ray::Ray,
+    texture::CheckerTexture,
     Point,
 };
 
@@ -26,7 +27,11 @@ impl HittableList {
     pub fn random_scene(n: i64) -> Self {
         let mut world = HittableList::new();
 
-        let ground_material = Arc::new(Lambertian::new(Color::new(0.5, 0.5, 0.5)));
+        let checker = Box::new(CheckerTexture::new_from_colors(
+            Color::new(0.2, 0.3, 0.1),
+            Color::new(0.9, 0.9, 0.9),
+        ));
+        let ground_material = Arc::new(Lambertian::new(checker));
         world.add(Arc::new(Sphere::new(
             Point::new(0.0, -1000.0, 0.0),
             1000.0,
@@ -54,7 +59,7 @@ impl HittableList {
                                 0.0,
                                 1.0,
                                 0.2,
-                                Arc::new(Lambertian::new(random_color(0.0, 1.0))),
+                                Arc::new(Lambertian::new_from_color(random_color(0.0, 1.0))),
                             )))
                         }
                         x if x < 0.95 => {
@@ -88,7 +93,7 @@ impl HittableList {
                 world.add(Arc::new(Sphere::new(
                     Point::new(-4.0, 1.0, 0.0),
                     1.0,
-                    Arc::new(Lambertian::new(Color::new(0.4, 0.2, 0.1))),
+                    Arc::new(Lambertian::new_from_color(Color::new(0.4, 0.2, 0.1))),
                 )));
                 world.add(Arc::new(Sphere::new(
                     Point::new(4.0, 1.0, 0.0),
@@ -152,6 +157,8 @@ impl Hittable for HittableList {
 pub struct HitRecord {
     pub p: Point,
     pub t: f64,
+    pub u: f64,
+    pub v: f64,
     pub normal: Vector,
     pub material: Arc<dyn Material>,
     pub face: Face,
@@ -161,6 +168,8 @@ impl HitRecord {
     pub fn new(
         p: Point,
         t: f64,
+        u: f64,
+        v: f64,
         outward_normal: Vector,
         ray: &Ray,
         material: Arc<dyn Material>,
@@ -169,6 +178,8 @@ impl HitRecord {
             HitRecord {
                 p,
                 t,
+                u,
+                v,
                 normal: -outward_normal,
                 material,
                 face: Face::Back,
@@ -177,6 +188,8 @@ impl HitRecord {
             HitRecord {
                 p,
                 t,
+                u,
+                v,
                 normal: outward_normal,
                 material,
                 face: Face::Front,

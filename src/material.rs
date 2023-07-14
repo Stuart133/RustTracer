@@ -4,6 +4,7 @@ use crate::{
     hittable::{Face, HitRecord},
     math::{near_zero, random_in_unit_sphere, random_unit_vector, Color, Vector},
     ray::Ray,
+    texture::{SolidColor, Texture},
 };
 
 pub trait Material: Sync + Send {
@@ -16,12 +17,16 @@ pub struct ScatterRecord {
 }
 
 pub struct Lambertian {
-    albedo: Color,
+    albedo: Box<dyn Texture>,
 }
 
 impl Lambertian {
-    pub fn new(albedo: Color) -> Self {
-        Lambertian { albedo }
+    pub fn new(albedo: Box<dyn Texture>) -> Self {
+        Self { albedo }
+    }
+
+    pub fn new_from_color(albedo: Color) -> Self {
+        Self::new(Box::new(SolidColor::new(albedo)))
     }
 }
 
@@ -37,7 +42,7 @@ impl Material for Lambertian {
 
         Some(ScatterRecord {
             ray: Ray::new(hit.p, scatter_direction, ray_in.time()),
-            attentuation: self.albedo,
+            attentuation: self.albedo.value(hit.u, hit.v, hit.p),
         })
     }
 }

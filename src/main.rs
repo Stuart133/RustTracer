@@ -6,6 +6,7 @@ mod material;
 mod math;
 mod objects;
 mod ray;
+mod texture;
 
 use std::sync::Arc;
 
@@ -33,7 +34,7 @@ const IMAGE_HEIGHT: i64 = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as i64;
 
 fn main() {
     // World
-    let objects = HittableList::random_scene(3);
+    let objects = HittableList::random_scene(5);
     let bvh = BVHNode::new(objects, 0.0, 1.0);
     let mut world = HittableList::new();
     world.add(Arc::new(bvh));
@@ -48,10 +49,10 @@ fn main() {
         Vector::new(0.0, 1.0, 0.0),
         20.0,
         ASPECT_RATIO,
-        0.1,
+        0.0,
         10.0,
         0.0,
-        1.0,
+        0.0,
     );
 
     // Render
