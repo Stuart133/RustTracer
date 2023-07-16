@@ -34,9 +34,7 @@ impl Perlin {
     fn generate_perm() -> Vec<usize> {
         let mut p: Vec<usize> = (0..POINT_COUNT).collect();
 
-        eprintln!("{:?}", p);
         Self::permute(&mut p);
-        eprintln!("{:?}", p);
 
         p
     }
