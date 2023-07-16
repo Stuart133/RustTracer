@@ -7,7 +7,7 @@ use crate::{
     material::{Dielectric, Lambertian, Metal},
     math::{random_color, random_range, Color, Point, Vector},
     objects::{MovingSphere, Sphere},
-    texture::CheckerTexture,
+    texture::{CheckerTexture, NoiseTexture},
     ASPECT_RATIO,
 };
 
@@ -136,6 +136,40 @@ pub fn two_spheres() -> Scene {
         20.0,
         ASPECT_RATIO,
         0.1,
+        10.0,
+        0.0,
+        1.0,
+    );
+
+    Scene {
+        objects: world,
+        camera,
+    }
+}
+
+pub fn two_perlin_spheres() -> Scene {
+    let mut world = HittableList::new();
+
+    let perlin = Arc::new(NoiseTexture::new());
+
+    world.add(Arc::new(Sphere::new(
+        Point::new(0.0, -1000.0, 0.0),
+        1000.0,
+        Arc::new(Lambertian::new(perlin.clone())),
+    )));
+    world.add(Arc::new(Sphere::new(
+        Point::new(0.0, 2.0, 0.0),
+        2.0,
+        Arc::new(Lambertian::new(perlin)),
+    )));
+
+    let camera = Camera::new(
+        Point::new(13.0, 2.0, 3.0),
+        Point::new(0.0, 0.0, 0.0),
+        Vector::new(0.0, 1.0, 0.0),
+        20.0,
+        ASPECT_RATIO,
+        0.0,
         10.0,
         0.0,
         1.0,

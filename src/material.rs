@@ -6,7 +6,7 @@ use crate::{
     hittable::{Face, HitRecord},
     math::{near_zero, random_in_unit_sphere, random_unit_vector, Color, Vector},
     ray::Ray,
-    texture::{SolidColor, Texture},
+    texture::{SolidColorTexture, Texture},
 };
 
 pub trait Material: Sync + Send {
@@ -28,7 +28,7 @@ impl Lambertian {
     }
 
     pub fn new_from_color(albedo: Color) -> Self {
-        Self::new(Arc::new(SolidColor::new(albedo)))
+        Self::new(Arc::new(SolidColorTexture::new(albedo)))
     }
 }
 

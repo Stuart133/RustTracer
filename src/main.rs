@@ -5,6 +5,7 @@ mod hittable;
 mod material;
 mod math;
 mod objects;
+mod perlin;
 mod ray;
 mod scene;
 mod texture;
@@ -29,7 +30,7 @@ const IMAGE_HEIGHT: i64 = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as i64;
 
 fn main() {
     // Scene
-    let scene = scene::two_spheres();
+    let scene = scene::two_perlin_spheres();
 
     // BVH
     let bvh = BVHNode::new(scene.objects, 0.0, 1.0);

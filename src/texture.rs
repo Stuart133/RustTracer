@@ -1,20 +1,23 @@
-use crate::math::{Color, Point};
+use crate::{
+    math::{Color, Point},
+    perlin::Perlin,
+};
 
 pub trait Texture: Send + Sync {
     fn value(&self, u: f64, v: f64, p: Point) -> Color;
 }
 
-pub struct SolidColor {
+pub struct SolidColorTexture {
     color: Color,
 }
 
-impl SolidColor {
+impl SolidColorTexture {
     pub fn new(color: Color) -> Self {
         Self { color }
     }
 }
 
-impl Texture for SolidColor {
+impl Texture for SolidColorTexture {
     fn value(&self, _: f64, _: f64, _: Point) -> Color {
         self.color
     }
@@ -32,8 +35,8 @@ impl CheckerTexture {
 
     pub fn new_from_colors(odd: Color, even: Color) -> Self {
         Self::new(
-            Box::new(SolidColor::new(odd)),
-            Box::new(SolidColor::new(even)),
+            Box::new(SolidColorTexture::new(odd)),
+            Box::new(SolidColorTexture::new(even)),
         )
     }
 }
@@ -47,5 +50,23 @@ impl Texture for CheckerTexture {
         } else {
             self.even.value(u, v, p)
         }
+    }
+}
+
+pub struct NoiseTexture {
+    noise: Perlin,
+}
+
+impl NoiseTexture {
+    pub fn new() -> Self {
+        Self {
+            noise: Perlin::new(),
+        }
+    }
+}
+
+impl Texture for NoiseTexture {
+    fn value(&self, _: f64, _: f64, p: Point) -> Color {
+        Color::new(1.0, 1.0, 1.0) * self.noise.noise(p)
     }
 }
