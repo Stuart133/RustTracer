@@ -150,7 +150,7 @@ pub fn two_spheres() -> Scene {
 pub fn two_perlin_spheres() -> Scene {
     let mut world = HittableList::new();
 
-    let perlin = Arc::new(NoiseTexture::new());
+    let perlin = Arc::new(NoiseTexture::new(4.0));
 
     world.add(Arc::new(Sphere::new(
         Point::new(0.0, -1000.0, 0.0),

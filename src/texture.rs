@@ -1,6 +1,6 @@
 use crate::{
     math::{Color, Point},
-    perlin::Perlin,
+    perlin::{Perlin, DEFAULT_TURBULENCE_DEPTH},
 };
 
 pub trait Texture: Send + Sync {
@@ -55,18 +55,27 @@ impl Texture for CheckerTexture {
 
 pub struct NoiseTexture {
     noise: Perlin,
+    scale: f64,
 }
 
 impl NoiseTexture {
-    pub fn new() -> Self {
+    pub fn new(scale: f64) -> Self {
         Self {
             noise: Perlin::new(),
+            scale,
         }
     }
 }
 
 impl Texture for NoiseTexture {
     fn value(&self, _: f64, _: f64, p: Point) -> Color {
-        Color::new(1.0, 1.0, 1.0) * self.noise.noise(p)
+        // Use the turbulent noise to perturb a sine wave, & use that to modify the color.
+        // Gives a marlbed wave effect.
+        // Lots of scope for material generation here if we expose some of the noise settings to the caller
+        Color::new(1.0, 1.0, 1.0)
+            * 0.5
+            * (1.0
+                + (self.scale * p.z + 10.0 * self.noise.turbulence(p, DEFAULT_TURBULENCE_DEPTH))
+                    .sin())
     }
 }
