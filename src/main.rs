@@ -26,7 +26,7 @@ const ASPECT_RATIO: f64 = 16.0 / 9.0;
 
 fn main() {
     // Scene
-    let scene = scene::earth();
+    let scene = scene::lights();
     let samples_per_pixel_per_thread = scene.image.samples_per_pixel / THREADS;
 
     // BVH

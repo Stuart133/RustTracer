@@ -151,7 +151,7 @@ impl DiffuseLight {
 }
 
 impl Material for DiffuseLight {
-    fn scatter(&self, ray_in: &Ray, hit: &HitRecord) -> Option<ScatterRecord> {
+    fn scatter(&self, _: &Ray, _: &HitRecord) -> Option<ScatterRecord> {
         None
     }
 

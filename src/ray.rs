@@ -1,5 +1,3 @@
-use nalgebra::Unit;
-
 use crate::{
     hittable::{Hittable, HittableList},
     math::{Color, Point, Vector},

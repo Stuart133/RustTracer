@@ -4,9 +4,9 @@ use std::{path::Path, sync::Arc};
 use crate::{
     camera::Camera,
     hittable::HittableList,
-    material::{Dielectric, Lambertian, Metal},
+    material::{Dielectric, DiffuseLight, Lambertian, Metal},
     math::{random_color, random_range, Color, Point, Vector},
-    objects::{MovingSphere, Sphere},
+    objects::{MovingSphere, Sphere, XyRectangle},
     texture::{CheckerTexture, ImageTexture, NoiseTexture, SolidColorTexture},
     ASPECT_RATIO,
 };
@@ -270,6 +270,55 @@ pub fn earth() -> Scene {
     }
 }
 
-// pub fn lights() -> Scene {
+pub fn lights() -> Scene {
+    let mut world = HittableList::new();
 
-// }
+    let noise = Arc::new(NoiseTexture::new(4.0));
+    world.add(Arc::new(Sphere::new(
+        Point::new(0.0, -1000.0, 0.0),
+        1000.0,
+        Arc::new(Lambertian::new(noise.clone())),
+    )));
+    world.add(Arc::new(Sphere::new(
+        Point::new(0.0, 2.0, 0.0),
+        2.0,
+        Arc::new(Lambertian::new(noise.clone())),
+    )));
+
+    // TODO: There is a BVH bug here
+    let light = Arc::new(DiffuseLight::new_from_color(Color::new(4.0, 4.0, 4.0)));
+    world.add(Arc::new(Sphere::new(
+        Point::new(0.0, 8.0, 0.0),
+        2.0,
+        light.clone(),
+    )));
+    world.add(Arc::new(XyRectangle::new(
+        3.0,
+        5.0,
+        1.0,
+        3.0,
+        -2.0,
+        light.clone(),
+    )));
+
+    let camera = Camera::new(
+        Point::new(26.0, 3.0, 6.0),
+        Point::new(0.0, 2.0, 0.0),
+        Vector::new(0.0, 1.0, 0.0),
+        20.0,
+        ASPECT_RATIO,
+        0.0,
+        10.0,
+        0.0,
+        1.0,
+    );
+
+    let image = Image::new(400, 400, ASPECT_RATIO);
+
+    Scene {
+        objects: world,
+        background: Color::new(0.0, 0.0, 0.0),
+        camera,
+        image,
+    }
+}

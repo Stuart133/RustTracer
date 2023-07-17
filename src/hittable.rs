@@ -76,7 +76,6 @@ pub struct HitRecord {
 
 impl HitRecord {
     pub fn new(
-        p: Point,
         t: f64,
         u: f64,
         v: f64,
@@ -86,7 +85,7 @@ impl HitRecord {
     ) -> Self {
         if ray.direction().dot(&outward_normal) > 0.0 {
             HitRecord {
-                p,
+                p: ray.at(t),
                 t,
                 u,
                 v,
@@ -96,7 +95,7 @@ impl HitRecord {
             }
         } else {
             HitRecord {
-                p,
+                p: ray.at(t),
                 t,
                 u,
                 v,
