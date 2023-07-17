@@ -1,3 +1,7 @@
+use std::path::Path;
+
+use image::{DynamicImage, GenericImageView, ImageError};
+
 use crate::{
     math::{Color, Point},
     perlin::{Perlin, DEFAULT_TURBULENCE_DEPTH},
@@ -77,5 +81,45 @@ impl Texture for NoiseTexture {
             * (1.0
                 + (self.scale * p.z + 10.0 * self.noise.turbulence(p, DEFAULT_TURBULENCE_DEPTH))
                     .sin())
+    }
+}
+
+pub struct ImageTexture {
+    image: DynamicImage,
+}
+
+impl ImageTexture {
+    pub fn new(path: &Path) -> Result<Self, ImageError> {
+        let image = image::open(path)?;
+
+        Ok(Self { image })
+    }
+}
+
+impl Texture for ImageTexture {
+    fn value(&self, u: f64, v: f64, _: Point) -> Color {
+        // Clamp input coordinates to [0, 1] x [1, 0]
+        let u = u.clamp(0.0, 1.0);
+        let v = 1.0 - v.clamp(0.0, 1.0); // Flip v to match image coordinates
+
+        let mut i = (u * self.image.width() as f64) as u32;
+        let mut j = (v * self.image.height() as f64) as u32;
+
+        // Clamp integer mapping
+        if i >= self.image.width() {
+            i = self.image.width() - 1
+        }
+        if j >= self.image.height() {
+            j = self.image.height() - 1
+        }
+
+        let color_scale = 1.0 / 255.0;
+        let pixel = self.image.get_pixel(i, j);
+
+        Color::new(
+            color_scale * pixel.0[0] as f64,
+            color_scale * pixel.0[1] as f64,
+            color_scale * pixel.0[2] as f64,
+        )
     }
 }

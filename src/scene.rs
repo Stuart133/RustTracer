@@ -1,5 +1,5 @@
 #![allow(dead_code)]
-use std::sync::Arc;
+use std::{path::Path, sync::Arc};
 
 use crate::{
     camera::Camera,
@@ -7,13 +7,30 @@ use crate::{
     material::{Dielectric, Lambertian, Metal},
     math::{random_color, random_range, Color, Point, Vector},
     objects::{MovingSphere, Sphere},
-    texture::{CheckerTexture, NoiseTexture},
+    texture::{CheckerTexture, ImageTexture, NoiseTexture, SolidColorTexture},
     ASPECT_RATIO,
 };
 
 pub struct Scene {
     pub objects: HittableList,
     pub camera: Camera,
+    pub image: Image,
+}
+
+pub struct Image {
+    pub width: i64,
+    pub height: i64,
+    pub samples_per_pixel: u64,
+}
+
+impl Image {
+    pub fn new(width: i64, samples_per_pixel: u64, aspect_ratio: f64) -> Self {
+        Self {
+            width,
+            height: (width as f64 / aspect_ratio) as i64,
+            samples_per_pixel,
+        }
+    }
 }
 
 pub fn weekend_scene(n: i64) -> Scene {
@@ -41,6 +58,27 @@ pub fn weekend_scene(n: i64) -> Scene {
 
             if (center - Point::new(4.0, 0.2, 0.0)).magnitude() > 0.9 {
                 match choose_material {
+                    x if x < 0.2 => {
+                        // Diffuse checker
+                        let checker = CheckerTexture::new(
+                            Box::new(SolidColorTexture::new(random_color(0.0, 1.0))),
+                            Box::new(SolidColorTexture::new(random_color(0.0, 1.0))),
+                        );
+
+                        world.add(Arc::new(Sphere::new(
+                            center,
+                            0.2,
+                            Arc::new(Lambertian::new(Arc::new(checker))),
+                        )));
+                    }
+                    x if x < 0.3 => {
+                        // Noise texture
+                        world.add(Arc::new(Sphere::new(
+                            center,
+                            0.2,
+                            Arc::new(Lambertian::new(Arc::new(NoiseTexture::new(10.0)))),
+                        )));
+                    }
                     x if x < 0.8 => {
                         // Diffuse
                         let end_center: nalgebra::OPoint<f64, nalgebra::Const<3>> =
@@ -89,6 +127,11 @@ pub fn weekend_scene(n: i64) -> Scene {
                 1.0,
                 Arc::new(Metal::new(Color::new(0.7, 0.6, 0.5), 0.0)),
             )));
+            world.add(Arc::new(Sphere::new(
+                Point::new(-8.0, 1.0, 0.0),
+                1.0,
+                Arc::new(Lambertian::new(Arc::new(NoiseTexture::new(4.0)))),
+            )))
         }
     }
 
@@ -98,15 +141,18 @@ pub fn weekend_scene(n: i64) -> Scene {
         Vector::new(0.0, 1.0, 0.0),
         20.0,
         ASPECT_RATIO,
-        0.1,
+        0.0,
         10.0,
         0.0,
-        1.0,
+        0.0,
     );
+
+    let image = Image::new(1440, 500, ASPECT_RATIO);
 
     Scene {
         objects: world,
         camera,
+        image,
     }
 }
 
@@ -141,9 +187,12 @@ pub fn two_spheres() -> Scene {
         1.0,
     );
 
+    let image = Image::new(400, 100, ASPECT_RATIO);
+
     Scene {
         objects: world,
         camera,
+        image,
     }
 }
 
@@ -175,8 +224,43 @@ pub fn two_perlin_spheres() -> Scene {
         1.0,
     );
 
+    let image = Image::new(400, 100, ASPECT_RATIO);
+
     Scene {
         objects: world,
         camera,
+        image,
+    }
+}
+
+pub fn earth() -> Scene {
+    let mut world = HittableList::new();
+
+    let earth_texture = Arc::new(ImageTexture::new(Path::new("./textures/earthmap.jpg")).unwrap());
+    let surface = Arc::new(Lambertian::new(earth_texture));
+    world.add(Arc::new(Sphere::new(
+        Point::new(0.0, 0.0, 0.0),
+        2.0,
+        surface,
+    )));
+
+    let camera = Camera::new(
+        Point::new(13.0, 2.0, 3.0),
+        Point::new(0.0, 0.0, 0.0),
+        Vector::new(0.0, 1.0, 0.0),
+        20.0,
+        ASPECT_RATIO,
+        0.0,
+        10.0,
+        0.0,
+        1.0,
+    );
+
+    let image = Image::new(400, 100, ASPECT_RATIO);
+
+    Scene {
+        objects: world,
+        camera,
+        image,
     }
 }

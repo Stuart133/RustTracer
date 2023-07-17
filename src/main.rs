@@ -20,17 +20,14 @@ use rayon::prelude::*;
 const MIN_INTERSECTION_DISTANCE: f64 = 0.0001;
 
 const THREADS: u64 = 16;
-const SAMPLES_PER_PIXEL: u64 = 100;
-const SAMPLES_PER_PIXEL_PER_THREAD: u64 = SAMPLES_PER_PIXEL / THREADS;
 const MAX_DEPTH: i64 = 50;
 
 const ASPECT_RATIO: f64 = 16.0 / 9.0;
-const IMAGE_WIDTH: i64 = 400;
-const IMAGE_HEIGHT: i64 = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as i64;
 
 fn main() {
     // Scene
-    let scene = scene::two_perlin_spheres();
+    let scene = scene::earth();
+    let samples_per_pixel_per_thread = scene.image.samples_per_pixel / THREADS;
 
     // BVH
     let bvh = BVHNode::new(scene.objects, 0.0, 1.0);
@@ -39,7 +36,7 @@ fn main() {
 
     // Render
     println!("P3");
-    println!("{IMAGE_WIDTH} {IMAGE_HEIGHT}");
+    println!("{} {}", scene.image.width, scene.image.height);
     println!("255");
 
     let images: Vec<Vec<Color>> = (0..THREADS)
@@ -47,20 +44,21 @@ fn main() {
         .map(|t| {
             let mut image = vec![];
 
-            for j in (0..IMAGE_HEIGHT).rev() {
+            for j in (0..scene.image.height).rev() {
                 if j % 10 == 0 {
                     eprintln!("Thread {t}, scanlines remaining: {j}");
                 }
-                for i in 0..IMAGE_WIDTH {
+                for i in 0..scene.image.width {
                     let mut pixel_color = Color::new(0.0, 0.0, 0.0);
-                    for _ in 0..SAMPLES_PER_PIXEL_PER_THREAD {
-                        let u = (i as f64 + rand::random::<f64>()) / (IMAGE_WIDTH - 1) as f64;
-                        let v = (j as f64 + rand::random::<f64>()) / (IMAGE_HEIGHT - 1) as f64;
+                    for _ in 0..samples_per_pixel_per_thread {
+                        let u = (i as f64 + rand::random::<f64>()) / (scene.image.width - 1) as f64;
+                        let v =
+                            (j as f64 + rand::random::<f64>()) / (scene.image.height - 1) as f64;
                         let ray = scene.camera.get_ray(u, v);
                         pixel_color += ray.color(&world, MAX_DEPTH);
                     }
 
-                    image.push(average_pixel(pixel_color, SAMPLES_PER_PIXEL_PER_THREAD))
+                    image.push(average_pixel(pixel_color, samples_per_pixel_per_thread))
                 }
             }
 
