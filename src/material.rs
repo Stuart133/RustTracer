@@ -4,13 +4,16 @@ use nalgebra::Unit;
 
 use crate::{
     hittable::{Face, HitRecord},
-    math::{near_zero, random_in_unit_sphere, random_unit_vector, Color, Vector},
+    math::{near_zero, random_in_unit_sphere, random_unit_vector, Color, Point, Vector},
     ray::Ray,
     texture::{SolidColorTexture, Texture},
 };
 
 pub trait Material: Sync + Send {
     fn scatter(&self, ray_in: &Ray, hit: &HitRecord) -> Option<ScatterRecord>;
+    fn emitted(&self, u: f64, v: f64, p: Point) -> Color {
+        Color::new(0.0, 0.0, 0.0)
+    }
 }
 
 pub struct ScatterRecord {
@@ -131,4 +134,28 @@ pub fn refract(uv: &Vector, normal: &Vector, etai_over_etat: f64) -> Vector {
     let r_out_parallel = -(1.0 - r_out_perpendicular.magnitude_squared()).abs().sqrt() * normal;
 
     r_out_parallel + r_out_perpendicular
+}
+
+pub struct DiffuseLight {
+    emit: Box<dyn Texture>,
+}
+
+impl DiffuseLight {
+    pub fn new(emit: Box<dyn Texture>) -> Self {
+        Self { emit }
+    }
+
+    pub fn new_from_color(color: Color) -> Self {
+        Self::new(Box::new(SolidColorTexture::new(color)))
+    }
+}
+
+impl Material for DiffuseLight {
+    fn scatter(&self, ray_in: &Ray, hit: &HitRecord) -> Option<ScatterRecord> {
+        None
+    }
+
+    fn emitted(&self, u: f64, v: f64, p: Point) -> Color {
+        self.emit.value(u, v, p)
+    }
 }

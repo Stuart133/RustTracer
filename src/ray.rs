@@ -42,19 +42,26 @@ impl Ray {
         self.time
     }
 
-    pub fn color(&self, world: &HittableList, depth: i64) -> Color {
-        // If we hit depth, the ray doesn't contribute any light
+    pub fn color(&self, background: Color, world: &HittableList, depth: i64) -> Color {
+        // If we hit depth, the ray doesn't gather any further light
         if depth <= 0 {
             return Color::new(0.0, 0.0, 0.0);
         }
 
         match world.hit(self, MIN_INTERSECTION_DISTANCE, f64::MAX) {
             Some(hit) => {
+                let emitted = hit.material.emitted(hit.u, hit.v, hit.p);
+
                 match hit.material.scatter(self, &hit) {
-                    Some(scatter) => scatter
-                        .attentuation
-                        .component_mul(&scatter.ray.color(world, depth - 1)),
-                    None => Color::new(0.0, 0.0, 0.0),
+                    Some(scatter) => {
+                        emitted
+                            + scatter.attentuation.component_mul(&scatter.ray.color(
+                                background,
+                                world,
+                                depth - 1,
+                            ))
+                    }
+                    None => emitted,
                 }
 
                 // TODO: Move these to their own diffuse materials
@@ -64,10 +71,7 @@ impl Ray {
                 // An different diffuse scattering method that is not distributed in proportion to the angle with the normal
                 // let target = hit.p + random_in_hemisphere(hit.normal);
             }
-            None => {
-                let t = 0.5 * (Unit::new_normalize(self.direction).y + 1.0);
-                (1.0 - t) * Color::new(1.0, 1.0, 1.0) + t * Color::new(0.5, 0.7, 1.0)
-            }
+            None => background,
         }
     }
 }

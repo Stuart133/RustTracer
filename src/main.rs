@@ -55,7 +55,7 @@ fn main() {
                         let v =
                             (j as f64 + rand::random::<f64>()) / (scene.image.height - 1) as f64;
                         let ray = scene.camera.get_ray(u, v);
-                        pixel_color += ray.color(&world, MAX_DEPTH);
+                        pixel_color += ray.color(scene.background, &world, MAX_DEPTH);
                     }
 
                     image.push(average_pixel(pixel_color, samples_per_pixel_per_thread))

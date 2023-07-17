@@ -13,6 +13,7 @@ use crate::{
 
 pub struct Scene {
     pub objects: HittableList,
+    pub background: Color,
     pub camera: Camera,
     pub image: Image,
 }
@@ -152,6 +153,7 @@ pub fn weekend_scene(n: i64) -> Scene {
     Scene {
         objects: world,
         camera,
+        background: Color::new(0.7, 0.8, 1.00),
         image,
     }
 }
@@ -192,6 +194,7 @@ pub fn two_spheres() -> Scene {
     Scene {
         objects: world,
         camera,
+        background: Color::new(0.7, 0.8, 1.00),
         image,
     }
 }
@@ -229,6 +232,7 @@ pub fn two_perlin_spheres() -> Scene {
     Scene {
         objects: world,
         camera,
+        background: Color::new(0.7, 0.8, 1.00),
         image,
     }
 }
@@ -261,6 +265,11 @@ pub fn earth() -> Scene {
     Scene {
         objects: world,
         camera,
+        background: Color::new(0.7, 0.8, 1.00),
         image,
     }
 }
+
+// pub fn lights() -> Scene {
+
+// }
