@@ -7,7 +7,7 @@ use crate::{
     material::{Dielectric, DiffuseLight, Lambertian, Metal},
     math::{random_color, random_range, Color, Point, Vector},
     objects::{MovingSphere, Sphere},
-    rectangle::{XyRectangle, XzRectangle, YzRectangle},
+    rectangle::{Cuboid, XyRectangle, XzRectangle, YzRectangle},
     texture::{CheckerTexture, ImageTexture, NoiseTexture, SolidColorTexture},
     ASPECT_RATIO,
 };
@@ -363,7 +363,18 @@ pub fn cornell_box() -> Scene {
         white.clone(),
     )));
 
-    let image = Image::new(600, 200, 1.0);
+    objects.add(Arc::new(Cuboid::new(
+        Point::new(130.0, 0.0, 65.0),
+        Point::new(295.0, 165.0, 230.0),
+        white.clone(),
+    )));
+    objects.add(Arc::new(Cuboid::new(
+        Point::new(265.0, 0.0, 295.0),
+        Point::new(430.0, 330.0, 460.0),
+        white.clone(),
+    )));
+
+    let image = Image::new(600, 500, 1.0);
 
     let camera = Camera::new(
         Point::new(278.0, 278.0, -800.0),
