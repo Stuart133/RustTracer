@@ -1,8 +1,9 @@
-use nalgebra::{Point3, Unit, Vector3};
+use nalgebra::{Point3, Rotation3, Unit, Vector3};
 
 pub type Vector = Vector3<f64>;
 pub type Color = Vector3<f64>;
 pub type Point = Point3<f64>;
+pub type Rotation = Rotation3<f64>;
 
 #[inline]
 pub fn random_range(min: f64, max: f64) -> f64 {

@@ -1,9 +1,7 @@
-// TODO: We can probably leverage the features of nalgebra to do the rotations/translations
-
 use crate::{
     aabb::AABB,
     hittable::{HitRecord, Hittable},
-    math::{Point, Vector},
+    math::{Point, Rotation, Vector},
     ray::Ray,
 };
 
@@ -24,7 +22,6 @@ impl Hittable for Translate {
         match self.hittable.hit(&offset_ray, t_min, t_max) {
             Some(mut hit) => {
                 hit.p += self.offset;
-                // hit.normal += self.offset;
 
                 Some(hit)
             }
@@ -43,16 +40,16 @@ impl Hittable for Translate {
     }
 }
 
-pub struct RotateY {
+pub struct Rotate {
     hittable: Box<dyn Hittable>,
-    sin_theta: f64,
-    cos_theta: f64,
+    rotation: Rotation,
     aabb: Option<AABB>,
 }
 
-impl RotateY {
-    pub fn new(hittable: Box<dyn Hittable>, theta: f64) -> Self {
-        let rads = theta.to_radians();
+impl Rotate {
+    // TODO: Support more than just y rotation
+    pub fn new(hittable: Box<dyn Hittable>, gamma: f64) -> Self {
+        let rads = gamma.to_radians();
         let sin_theta = rads.sin();
         let cos_theta = rads.cos();
 
@@ -88,49 +85,33 @@ impl RotateY {
 
                 Self {
                     hittable,
-                    sin_theta,
-                    cos_theta,
+                    rotation: Rotation::from_euler_angles(0.0, rads, 0.0),
                     aabb: Some(AABB::new(min, max)),
                 }
             }
             None => Self {
                 hittable,
-                sin_theta,
-                cos_theta,
+                rotation: Rotation::from_euler_angles(0.0, rads, 0.0),
                 aabb: None,
             },
         }
     }
 }
 
-impl Hittable for RotateY {
+impl Hittable for Rotate {
     fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
-        let mut origin = ray.origin();
-        let mut direction = ray.direction();
-
-        // Transform the x/z coordinates of the origin & direction with the rotation
-        origin[0] = self.cos_theta * ray.origin()[0] - self.sin_theta * ray.origin()[2];
-        origin[2] = self.sin_theta * ray.origin()[0] + self.cos_theta * ray.origin()[2];
-
-        direction[0] = self.cos_theta * ray.direction()[0] - self.sin_theta * ray.direction()[2];
-        direction[2] = self.sin_theta * ray.direction()[0] + self.cos_theta * ray.direction()[2];
-
-        let rotated_ray = Ray::new(origin, direction, ray.time());
+        // Rotate the ray opposite to the transform
+        let rotated_ray = Ray::new(
+            self.rotation.inverse_transform_point(&ray.origin()),
+            self.rotation.inverse_transform_vector(&ray.direction()),
+            ray.time(),
+        );
 
         match self.hittable.hit(&rotated_ray, t_min, t_max) {
             Some(mut hit) => {
-                // Transform the hit x/z coordinates and surface normal with the rotaion
-                let mut p = hit.p;
-                let mut normal = hit.normal;
-
-                p[0] = self.cos_theta * hit.p[0] + self.sin_theta * hit.p[2];
-                p[2] = -self.sin_theta * hit.p[0] + self.cos_theta * hit.p[2];
-
-                normal[0] = self.cos_theta * hit.normal[0] + self.sin_theta * hit.normal[2];
-                normal[2] = -self.sin_theta * hit.normal[0] + self.cos_theta * hit.normal[2];
-
-                hit.p = p;
-                hit.normal = normal;
+                // Rotate the hit in the direction of the transform
+                hit.p = self.rotation.transform_point(&hit.p);
+                hit.normal = self.rotation.transform_vector(&hit.normal);
 
                 Some(hit)
             }
