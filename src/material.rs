@@ -11,7 +11,7 @@ use crate::{
 
 pub trait Material: Sync + Send {
     fn scatter(&self, ray_in: &Ray, hit: &HitRecord) -> Option<ScatterRecord>;
-    fn emitted(&self, u: f64, v: f64, p: Point) -> Color {
+    fn emitted(&self, _u: f64, _v: f64, _p: Point) -> Color {
         Color::new(0.0, 0.0, 0.0)
     }
 }

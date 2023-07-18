@@ -2,11 +2,12 @@
 use std::{path::Path, sync::Arc};
 
 use crate::{
-    camera::Camera,
+    camera::{self, Camera},
     hittable::HittableList,
     material::{Dielectric, DiffuseLight, Lambertian, Metal},
     math::{random_color, random_range, Color, Point, Vector},
-    objects::{MovingSphere, Sphere, XyRectangle},
+    objects::{MovingSphere, Sphere},
+    rectangle::{XyRectangle, XzRectangle, YzRectangle},
     texture::{CheckerTexture, ImageTexture, NoiseTexture, SolidColorTexture},
     ASPECT_RATIO,
 };
@@ -285,7 +286,6 @@ pub fn lights() -> Scene {
         Arc::new(Lambertian::new(noise.clone())),
     )));
 
-    // TODO: There is a BVH bug here
     let light = Arc::new(DiffuseLight::new_from_color(Color::new(4.0, 4.0, 4.0)));
     world.add(Arc::new(Sphere::new(
         Point::new(0.0, 8.0, 0.0),
@@ -317,6 +317,68 @@ pub fn lights() -> Scene {
 
     Scene {
         objects: world,
+        background: Color::new(0.0, 0.0, 0.0),
+        camera,
+        image,
+    }
+}
+
+pub fn cornell_box() -> Scene {
+    let mut objects = HittableList::new();
+
+    let red = Arc::new(Lambertian::new_from_color(Color::new(0.65, 0.05, 0.05)));
+    let white = Arc::new(Lambertian::new_from_color(Color::new(0.73, 0.73, 0.73)));
+    let green = Arc::new(Lambertian::new_from_color(Color::new(0.12, 0.45, 0.12)));
+    let light = Arc::new(DiffuseLight::new_from_color(Color::new(15.0, 15.0, 15.0)));
+
+    objects.add(Arc::new(YzRectangle::new(
+        0.0, 555.0, 0.0, 555.0, 555.0, green,
+    )));
+    objects.add(Arc::new(YzRectangle::new(0.0, 555.0, 0.0, 555.0, 0.0, red)));
+    objects.add(Arc::new(XzRectangle::new(
+        213.0, 343.0, 227.0, 332.0, 554.0, light,
+    )));
+    objects.add(Arc::new(XzRectangle::new(
+        0.0,
+        555.0,
+        0.0,
+        555.0,
+        0.0,
+        white.clone(),
+    )));
+    objects.add(Arc::new(XzRectangle::new(
+        0.0,
+        555.0,
+        0.0,
+        555.0,
+        555.0,
+        white.clone(),
+    )));
+    objects.add(Arc::new(XyRectangle::new(
+        0.0,
+        555.0,
+        0.0,
+        555.0,
+        555.0,
+        white.clone(),
+    )));
+
+    let image = Image::new(600, 200, 1.0);
+
+    let camera = Camera::new(
+        Point::new(278.0, 278.0, -800.0),
+        Point::new(278.0, 278.0, 0.0),
+        Vector::new(0.0, 1.0, 0.0),
+        40.0,
+        1.0,
+        0.0,
+        10.0,
+        0.0,
+        0.0,
+    );
+
+    Scene {
+        objects,
         background: Color::new(0.0, 0.0, 0.0),
         camera,
         image,

@@ -7,6 +7,7 @@ mod math;
 mod objects;
 mod perlin;
 mod ray;
+mod rectangle;
 mod scene;
 mod texture;
 
@@ -26,7 +27,7 @@ const ASPECT_RATIO: f64 = 16.0 / 9.0;
 
 fn main() {
     // Scene
-    let scene = scene::lights();
+    let scene = scene::cornell_box();
     let samples_per_pixel_per_thread = scene.image.samples_per_pixel / THREADS;
 
     // BVH

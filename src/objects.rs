@@ -162,61 +162,6 @@ fn get_sphere_uv(p: Point) -> (f64, f64) {
     (phi / (2.0 * PI), theta / PI)
 }
 
-pub struct XyRectangle {
-    material: Arc<dyn Material>,
-    x0: f64,
-    x1: f64,
-    y0: f64,
-    y1: f64,
-    k: f64,
-}
-
-impl XyRectangle {
-    pub fn new(x0: f64, x1: f64, y0: f64, y1: f64, k: f64, material: Arc<dyn Material>) -> Self {
-        Self {
-            material,
-            x0,
-            x1,
-            y0,
-            y1,
-            k,
-        }
-    }
-}
-
-impl Hittable for XyRectangle {
-    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
-        // Calculate hit position of the xy-plane along the ray
-        let t = (self.k - ray.origin().z) / ray.direction().z;
-        if t < t_min || t > t_max {
-            return None;
-        }
-
-        let x = ray.origin().x + t * ray.direction().x;
-        let y = ray.origin().y + t * ray.direction().y;
-        if x < self.x0 || x > self.x1 || y < self.y0 || y > self.y1 {
-            return None;
-        }
-
-        Some(HitRecord::new(
-            t,
-            (x - self.x0) / (self.x1 - self.x0),
-            (y - self.y0) / (self.y1 - self.y0),
-            Vector::new(0.0, 0.0, 1.0),
-            ray,
-            self.material.clone(),
-        ))
-    }
-
-    fn bounding_box(&self, _: f64, _: f64) -> Option<AABB> {
-        // We need to pad the z-axis of the bounding box otherwise it will be infinitely thin
-        Some(AABB::new(
-            Point::new(self.x0, self.y0, self.k - 0.0001),
-            Point::new(self.x1, self.y1, self.k + 0.0001),
-        ))
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use std::sync::Arc;
