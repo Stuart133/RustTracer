@@ -4,6 +4,7 @@ use std::{path::Path, sync::Arc};
 use crate::{
     camera::{self, Camera},
     hittable::HittableList,
+    instance::{RotateY, Translate},
     material::{Dielectric, DiffuseLight, Lambertian, Metal},
     math::{random_color, random_range, Color, Point, Vector},
     objects::{MovingSphere, Sphere},
@@ -363,16 +364,23 @@ pub fn cornell_box() -> Scene {
         white.clone(),
     )));
 
-    objects.add(Arc::new(Cuboid::new(
-        Point::new(130.0, 0.0, 65.0),
-        Point::new(295.0, 165.0, 230.0),
+    let box1 = Box::new(Cuboid::new(
+        Point::new(0.0, 0.0, 0.0),
+        Point::new(165.0, 330.0, 165.0),
         white.clone(),
-    )));
-    objects.add(Arc::new(Cuboid::new(
-        Point::new(265.0, 0.0, 295.0),
-        Point::new(430.0, 330.0, 460.0),
+    ));
+    let box1 = Box::new(RotateY::new(box1, 15.0));
+    let box1 = Translate::new(box1, Vector::new(265.0, 0.0, 295.0));
+    objects.add(Arc::new(box1));
+
+    let box2 = Box::new(Cuboid::new(
+        Point::new(0.0, 0.0, 0.0),
+        Point::new(165.0, 165.0, 165.0),
         white.clone(),
-    )));
+    ));
+    let box2 = Box::new(RotateY::new(box2, -18.0));
+    let box2 = Translate::new(box2, Vector::new(130.0, 0.0, 65.0));
+    objects.add(Arc::new(box2));
 
     let image = Image::new(600, 500, 1.0);
 

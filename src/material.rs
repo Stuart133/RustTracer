@@ -65,7 +65,7 @@ impl Metal {
 
 impl Material for Metal {
     fn scatter(&self, ray_in: &Ray, hit: &HitRecord) -> Option<ScatterRecord> {
-        let reflected = reflect(&Unit::new_normalize(*ray_in.direction()), &hit.normal);
+        let reflected = reflect(&Unit::new_normalize(ray_in.direction()), &hit.normal);
 
         // TODO: Absorb rays which scatter inside the original object
         Some(ScatterRecord {
@@ -103,7 +103,7 @@ impl Material for Dielectric {
             Face::Back => self.refraction_index,
         };
 
-        let unit_direction = Unit::new_normalize(*ray_in.direction());
+        let unit_direction = Unit::new_normalize(ray_in.direction());
         let cos_theta = -unit_direction.dot(&hit.normal).min(1.0);
         let sin_theta = (1.0 - cos_theta.powi(2)).sqrt();
 

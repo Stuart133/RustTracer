@@ -2,6 +2,7 @@ mod aabb;
 mod bvh;
 mod camera;
 mod hittable;
+mod instance;
 mod material;
 mod math;
 mod objects;

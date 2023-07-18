@@ -29,7 +29,7 @@ impl Hittable for Sphere {
     fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let oc = ray.origin() - self.center;
         let a = ray.direction().magnitude_squared();
-        let half_b = oc.dot(ray.direction());
+        let half_b = oc.dot(&ray.direction());
         let c = oc.magnitude_squared() - self.radius.powi(2);
 
         // Check the determinant of the intersection quadratic implies real solutions
@@ -108,7 +108,7 @@ impl Hittable for MovingSphere {
     fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let oc = ray.origin() - self.center(ray.time());
         let a = ray.direction().magnitude_squared();
-        let half_b = oc.dot(ray.direction());
+        let half_b = oc.dot(&ray.direction());
         let c = oc.magnitude_squared() - self.radius.powi(2);
 
         // Check the determinant of the intersection quadratic implies real solutions

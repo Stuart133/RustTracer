@@ -31,6 +31,11 @@ impl AABB {
         self.minimum
     }
 
+    #[inline]
+    pub fn maximum(&self) -> Point {
+        self.maximum
+    }
+
     // TODO: Implement the optimized routine suggested here: https://raytracing.github.io/books/RayTracingTheNextWeek.html#boundingvolumehierarchies/anoptimizedaabbhitmethod
     // It's gonna need tests to check convergance with this method
     pub fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> bool {

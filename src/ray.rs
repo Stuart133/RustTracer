@@ -26,13 +26,13 @@ impl Ray {
     }
 
     #[inline]
-    pub fn direction(&self) -> &Vector {
-        &self.direction
+    pub fn direction(&self) -> Vector {
+        self.direction
     }
 
     #[inline]
-    pub fn origin(&self) -> &Point {
-        &self.origin
+    pub fn origin(&self) -> Point {
+        self.origin
     }
 
     #[inline]
