@@ -1,4 +1,7 @@
+use std::ops::Range;
+
 use nalgebra::{Point3, Rotation3, Unit, Vector3};
+use rand::{thread_rng, Rng};
 
 pub type Vector = Vector3<f64>;
 pub type Color = Vector3<f64>;
@@ -8,6 +11,15 @@ pub type Rotation = Rotation3<f64>;
 #[inline]
 pub fn random_range(min: f64, max: f64) -> f64 {
     min + (max - min) * rand::random::<f64>()
+}
+
+#[inline]
+pub fn random_point(range: Range<f64>) -> Point {
+    Point::new(
+        thread_rng().gen_range(range.clone()),
+        thread_rng().gen_range(range.clone()),
+        thread_rng().gen_range(range),
+    )
 }
 
 #[inline]

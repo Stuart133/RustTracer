@@ -7,3 +7,5 @@ A simple CPU ray tracer written in rust using Peter Shirley's [excellent tutoria
 ![](images/weekend.png)
 
 ![](images/cornell.png)
+
+![](images/week.png)

@@ -5,12 +5,13 @@ mod hittable;
 mod instance;
 mod material;
 mod math;
-mod objects;
 mod perlin;
 mod ray;
 mod rectangle;
 mod scene;
+mod sphere;
 mod texture;
+mod volumes;
 
 use std::sync::Arc;
 
@@ -28,7 +29,7 @@ const ASPECT_RATIO: f64 = 16.0 / 9.0;
 
 fn main() {
     // Scene
-    let scene = scene::cornell_box();
+    let scene = scene::week_scene(20, 1000);
     let samples_per_pixel_per_thread = scene.image.samples_per_pixel / THREADS;
 
     // BVH
